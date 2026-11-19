@@ -1,0 +1,358 @@
+.noxen-console-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  max-width: 1500px;
+  min-width: 0;
+}
+.noxen-console-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.noxen-console-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent, #a5e6bd);
+  font: 700 10px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .16em;
+}
+.noxen-console-heading h1 {
+  margin: 8px 0 4px;
+  font-size: clamp(32px, 4vw, 46px);
+  letter-spacing: -.055em;
+}
+.noxen-console-heading h1 span { color: var(--accent, #a5e6bd); }
+.noxen-console-heading p {
+  margin: 0;
+  color: var(--text-muted, #91a098);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.noxen-console-heading-actions { display: flex; align-items: center; gap: 8px; }
+.noxen-console-status, .noxen-console-icon-button {
+  min-height: 36px;
+  border: 1px solid var(--border-color, #2b3a31);
+  border-radius: 9px;
+  background: var(--panel-bg, #151c18);
+}
+.noxen-console-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  color: var(--text-muted, #a0b1a6);
+  font: 700 10px ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .08em;
+}
+.noxen-console-status.online { color: #9fe7b8; }
+.noxen-console-status.offline { color: #e7bb78; }
+.noxen-console-icon-button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  color: var(--text-muted, #b4c0b8);
+  cursor: pointer;
+}
+.noxen-console-icon-button:hover { border-color: var(--accent, #a5e6bd); color: var(--accent, #a5e6bd); }
+.noxen-console-shell {
+  overflow: hidden;
+  border: 1px solid #26392e;
+  border-radius: 15px;
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(67, 122, 85, .12), transparent 34%),
+    #0b100e;
+  color: #e0eae3;
+  box-shadow: 0 22px 70px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.025);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+}
+.noxen-console-windowbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 43px;
+  padding: 0 15px;
+  border-bottom: 1px solid #203127;
+  background: rgba(19, 29, 23, .94);
+}
+.noxen-console-windowdots { display: flex; align-items: center; gap: 6px; }
+.noxen-console-windowdots i { width: 8px; height: 8px; border-radius: 50%; background: #52735d; }
+.noxen-console-windowdots i:nth-child(2) { background: #8d8054; }
+.noxen-console-windowdots i:nth-child(3) { background: #8b5854; }
+.noxen-console-window-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #94a99a;
+  font-size: 11px;
+}
+.noxen-console-window-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #81b997;
+  font-size: 9px;
+  letter-spacing: .12em;
+}
+.noxen-console-window-state span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #7fe2a3; box-shadow: 0 0 10px rgba(127,226,163,.65);
+}
+.noxen-console-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid #1d2d23;
+  background: rgba(14, 22, 17, .88);
+}
+.noxen-console-model { display: grid; gap: 5px; min-width: 180px; }
+.noxen-console-model > span {
+  display: flex; align-items: center; gap: 6px;
+  color: #799083; font-size: 9px; letter-spacing: .13em; font-weight: 700;
+}
+.noxen-console-model select {
+  width: 100%;
+  min-height: 32px;
+  padding: 5px 28px 5px 9px;
+  border: 1px solid #2b4032;
+  border-radius: 7px;
+  background: #111a14;
+  color: #dce9df;
+  font: 600 11px ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.noxen-console-auto {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-end;
+  min-height: 32px;
+  color: #9eb3a4;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  cursor: pointer;
+}
+.noxen-console-auto input {
+  position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;
+}
+.noxen-console-toggle {
+  position: relative; width: 30px; height: 17px; border-radius: 20px;
+  background: #39483e; transition: background .18s ease;
+}
+.noxen-console-toggle::after {
+  content: ""; position: absolute; left: 3px; top: 3px;
+  width: 11px; height: 11px; border-radius: 50%; background: #a9b8ad;
+  transition: transform .18s ease, background .18s ease;
+}
+.noxen-console-auto input:checked + .noxen-console-toggle { background: #376e4c; }
+.noxen-console-auto input:checked + .noxen-console-toggle::after {
+  transform: translateX(13px); background: #b6f1c7;
+}
+.noxen-console-auto input:focus-visible + .noxen-console-toggle { outline: 2px solid #a5e6bd; outline-offset: 3px; }
+.noxen-console-toolbar-meta {
+  display: flex; align-items: center; gap: 14px; margin-left: auto;
+  color: #789184; font-size: 9px; letter-spacing: .09em;
+}
+.noxen-console-toolbar-meta span { display: inline-flex; align-items: center; gap: 5px; }
+.noxen-console-quickbar {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  padding: 9px 14px;
+  border-bottom: 1px solid #1d2d23;
+  background: rgba(12, 18, 14, .8);
+}
+.noxen-console-quickbar button {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 9px;
+  border: 1px solid #26392d; border-radius: 6px;
+  background: #111a14; color: #9ab0a0;
+  font: 10px ui-monospace, SFMono-Regular, Consolas, monospace; cursor: pointer;
+}
+.noxen-console-quickbar button:hover { border-color: #4c805d; color: #b3e7c2; }
+.noxen-console-output {
+  min-height: 370px;
+  max-height: min(66vh, 760px);
+  overflow: auto;
+  padding: 17px clamp(13px, 2.3vw, 25px) 22px;
+  scrollbar-width: thin;
+  scrollbar-color: #314c39 transparent;
+  background-image: linear-gradient(rgba(130, 170, 140, .018) 1px, transparent 1px);
+  background-size: 100% 25px;
+}
+.noxen-console-welcome {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 0 14px; margin: 0 0 12px;
+  border-bottom: 1px solid #1d2c22;
+}
+.noxen-console-welcome-mark {
+  display: grid; place-items: center; width: 36px; height: 36px;
+  border: 1px solid #33513b; border-radius: 9px;
+  background: #14251a; color: #a8e9bd;
+}
+.noxen-console-welcome strong { color: #c8dfce; font-size: 11px; letter-spacing: .1em; }
+.noxen-console-welcome strong span { color: #79a489; font-weight: 500; }
+.noxen-console-welcome p { margin: 4px 0 0; color: #72877a; font-size: 10px; }
+.noxen-console-event {
+  display: flex; align-items: flex-start; gap: 11px;
+  padding: 5px 0; color: #8da695;
+}
+.noxen-console-event-time { flex: 0 0 62px; padding-top: 2px; color: #4f6958; font-size: 9px; }
+.noxen-console-event pre {
+  min-width: 0; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere;
+  color: inherit; font: 10px/1.75 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.noxen-console-event.command pre { color: #b7e9c4; }
+.noxen-console-event.success pre { color: #8ed7a7; }
+.noxen-console-event.warning pre { color: #e7bd82; }
+.noxen-console-entry {
+  margin: 16px 0 20px; padding: 12px 14px;
+  border: 1px solid #1e3025; border-radius: 8px;
+  background: rgba(14, 22, 17, .77);
+}
+.noxen-console-entry.user { border-left: 2px solid #6da77e; }
+.noxen-console-entry.assistant { border-left: 2px solid #a4d9b3; background: rgba(17, 28, 21, .86); }
+.noxen-console-entry-label {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 9px; color: #809a88;
+  font-size: 9px; font-weight: 700; letter-spacing: .13em;
+}
+.noxen-console-prompt-symbol, .noxen-console-output-symbol { color: #a5e6bd; font-size: 15px; }
+.noxen-console-entry-label small { color: #506b58; font-size: 9px; }
+.noxen-console-model-tag {
+  margin-left: auto; padding: 4px 7px; border: 1px solid #2a4834;
+  border-radius: 4px; color: #a9d9b7; background: #13251a;
+  font-size: 9px; letter-spacing: .05em;
+}
+.noxen-console-user-input {
+  margin: 0; white-space: pre-wrap; overflow-wrap: anywhere;
+  color: #d8e6dc; font: 12px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.noxen-console-markdown {
+  color: #cddbd1; font: 12px/1.8 ui-monospace, SFMono-Regular, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+.noxen-console-markdown > :first-child { margin-top: 0; }
+.noxen-console-markdown > :last-child { margin-bottom: 0; }
+.noxen-console-markdown h1, .noxen-console-markdown h2, .noxen-console-markdown h3 {
+  margin: 17px 0 8px; color: #b8eac6; font-family: inherit;
+  letter-spacing: -.02em; line-height: 1.45;
+}
+.noxen-console-markdown h1 { font-size: 17px; }
+.noxen-console-markdown h2 { font-size: 15px; }
+.noxen-console-markdown h3 { font-size: 13px; }
+.noxen-console-markdown p { margin: 8px 0; }
+.noxen-console-markdown ul, .noxen-console-markdown ol { padding-left: 21px; }
+.noxen-console-markdown li { margin: 4px 0; }
+.noxen-console-markdown a { color: #8ecba2; text-decoration: underline; text-underline-offset: 3px; }
+.noxen-console-markdown blockquote {
+  margin: 10px 0; padding: 5px 12px; border-left: 2px solid #507b5d; color: #9db5a4;
+}
+.noxen-console-markdown code {
+  padding: 2px 5px; border: 1px solid #294032; border-radius: 4px;
+  background: #0a130d; color: #b7edc5; font-size: .92em;
+}
+.noxen-console-markdown pre {
+  overflow: auto; padding: 13px; border: 1px solid #294032; border-radius: 7px;
+  background: #080e0a; color: #c7e4ce;
+}
+.noxen-console-markdown pre code { padding: 0; border: 0; background: transparent; }
+.noxen-console-markdown table { display: block; overflow-x: auto; border-collapse: collapse; }
+.noxen-console-markdown th, .noxen-console-markdown td {
+  padding: 6px 9px; border: 1px solid #304537; text-align: left;
+}
+.noxen-console-markdown th { background: #16251a; color: #b7e5c3; }
+.noxen-console-working {
+  display: flex; align-items: center; gap: 8px; padding: 13px 0;
+  color: #a8d9b5; font-size: 11px;
+}
+.noxen-console-working small { margin-left: auto; color: #73957d; font-size: 9px; letter-spacing: .1em; }
+.noxen-console-spin { animation: noxen-console-spin 1s linear infinite; }
+@keyframes noxen-console-spin { to { transform: rotate(360deg); } }
+.noxen-console-empty { padding: 54px 15px; text-align: center; color: #688271; }
+.noxen-console-empty > span { color: #87b394; font-size: 10px; letter-spacing: .16em; }
+.noxen-console-empty p { margin: 9px 0 0; font-size: 11px; }
+.noxen-console-empty code { color: #b2e9c0; }
+.noxen-console-cursor-line {
+  display: flex; align-items: center; gap: 9px; margin-top: 7px;
+  color: #9ee2b0; font-size: 16px;
+}
+.noxen-console-cursor-line i {
+  display: inline-block; width: 7px; height: 14px; background: #83d99d;
+  animation: noxen-console-blink 1.1s steps(2, start) infinite;
+}
+@keyframes noxen-console-blink { to { visibility: hidden; } }
+.noxen-console-input-area {
+  display: flex; align-items: center; gap: 11px;
+  padding: 12px 14px; border-top: 1px solid #26392d;
+  background: #101a13;
+}
+.noxen-console-input-prefix {
+  display: flex; align-items: center; gap: 7px; flex: 0 0 auto;
+  color: #789e84; font-size: 11px;
+}
+.noxen-console-input-prefix b { color: #a4e6b6; font-size: 18px; }
+.noxen-console-input-area textarea {
+  flex: 1; min-width: 0; min-height: 42px; max-height: 150px; resize: vertical;
+  padding: 10px 0; border: 0; outline: 0; background: transparent;
+  color: #e0ebe3; font: 12px/1.65 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.noxen-console-input-area textarea::placeholder { color: #607568; }
+.noxen-console-run-button {
+  display: grid; place-items: center; width: 38px; height: 38px; flex: 0 0 auto;
+  border: 1px solid #467353; border-radius: 8px; background: #1c3b26;
+  color: #b8edc5; cursor: pointer;
+}
+.noxen-console-run-button:disabled { opacity: .4; cursor: not-allowed; }
+.noxen-console-run-button:hover:not(:disabled) { background: #285335; }
+.noxen-console-run-button.stop { border-color: #7c4d3d; background: #38251f; color: #e9b29c; }
+.noxen-console-footer {
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 9px 14px; border-top: 1px solid #1b2a20;
+  background: #0b120d; color: #667f6d; font-size: 9px; letter-spacing: .06em;
+}
+.noxen-console-footer span { display: inline-flex; align-items: center; gap: 6px; }
+.noxen-console-command-help {
+  padding: 14px 16px; border: 1px solid var(--border-color, #2a3b30);
+  border-radius: 12px; background: var(--panel-bg, #151c18);
+}
+.noxen-console-command-help-title {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 11px;
+  color: var(--text-muted, #9aac9f); font: 700 10px ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .12em;
+}
+.noxen-console-command-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.noxen-console-command-grid button {
+  display: flex; align-items: center; gap: 9px; min-width: 0;
+  padding: 8px 9px; border: 1px solid var(--border-color, #293a30);
+  border-radius: 7px; background: transparent; text-align: left; cursor: pointer;
+}
+.noxen-console-command-grid button:hover { border-color: var(--accent, #a5e6bd); }
+.noxen-console-command-grid code { color: var(--accent, #a5e6bd); font-size: 10px; }
+.noxen-console-command-grid span { min-width: 0; flex: 1; color: var(--text-muted, #8d9d92); font-size: 10px; }
+.noxen-console-command-grid svg { color: var(--text-muted, #87998d); flex: 0 0 auto; }
+@media (max-width: 720px) {
+  .noxen-console-page { gap: 13px; }
+  .noxen-console-heading { align-items: flex-start; }
+  .noxen-console-heading-actions { margin-left: auto; }
+  .noxen-console-shell { border-radius: 10px; }
+  .noxen-console-toolbar { gap: 11px; padding: 10px; }
+  .noxen-console-model { min-width: min(100%, 168px); flex: 1 1 140px; }
+  .noxen-console-toolbar-meta { width: 100%; margin: 0; }
+  .noxen-console-output { min-height: 330px; max-height: 58vh; padding: 13px 10px 17px; }
+  .noxen-console-event { gap: 7px; }
+  .noxen-console-event-time { flex-basis: 54px; font-size: 8px; }
+  .noxen-console-event pre { font-size: 9px; }
+  .noxen-console-markdown, .noxen-console-user-input { font-size: 11px; }
+  .noxen-console-entry { padding: 10px; }
+  .noxen-console-input-area { gap: 7px; padding: 9px; }
+  .noxen-console-command-grid { grid-template-columns: 1fr; }
+  .noxen-console-footer { font-size: 8px; }
+  .noxen-console-window-title { font-size: 9px; }
+  .noxen-console-window-state { font-size: 8px; }
+}
