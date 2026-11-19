@@ -231,8 +231,10 @@ export default function WorkbenchConsole({
       case "/data":
       case "/ideas": {
         if (!argument) { appendEvent("warning", "Add a prompt after " + command + "."); return; }
-        const profile = command.slice(1);
-        appendEvent("system", "Dispatching to NOXEN with the " + profile + " profile.");
+        const profile = command === "/research" ? "web" : command.slice(1);
+        appendEvent("system", command === "/research"
+          ? "Dispatching to NOXEN with live web research enabled."
+          : "Dispatching to NOXEN with the " + profile + " profile.");
         await onRun(argument, { toolOverride: profile, displayInput: line });
         appendEvent("success", "Profile request returned.");
         return;
