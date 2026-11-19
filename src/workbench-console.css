@@ -356,3 +356,36 @@
   .noxen-console-window-title { font-size: 9px; }
   .noxen-console-window-state { font-size: 8px; }
 }
+
+
+/* Terminal command discovery and live media output */
+.noxen-console-suggestions {
+  display:flex; flex-wrap:wrap; gap:7px; padding:9px 12px;
+  border:1px solid var(--console-border, rgba(130,180,150,.18)); border-top:0;
+  background:rgba(6,12,10,.72);
+}
+.noxen-console-suggestions button {
+  display:inline-flex; align-items:center; gap:8px; min-width:0; padding:7px 9px;
+  color:#c9d8cf; border:1px solid rgba(134,180,151,.16); border-radius:7px;
+  background:rgba(20,33,27,.75); text-align:left; cursor:pointer;
+}
+.noxen-console-suggestions button:hover,.noxen-console-suggestions button:focus-visible {
+  border-color:rgba(119,213,157,.55); background:rgba(41,75,54,.55);
+}
+.noxen-console-suggestions code { color:#9de5b4; font-size:12px; }
+.noxen-console-suggestions span { color:#8d9e92; font-size:11px; }
+.noxen-console-latency { margin-left:auto; color:#8ea99a; font:11px ui-monospace,SFMono-Regular,Menlo,monospace; }
+.noxen-console-provider { display:block; margin-top:10px; color:#81968a; font:10px ui-monospace,SFMono-Regular,Menlo,monospace; }
+.noxen-console-media-image,.noxen-console-media-video {
+  display:block; max-width:min(100%,720px); max-height:440px; margin-top:14px;
+  border:1px solid rgba(134,180,151,.2); border-radius:10px; background:#080e0b;
+}
+.noxen-console-media-image { width:auto; height:auto; object-fit:contain; }
+.noxen-console-media-video { width:100%; }
+.noxen-console-media-audio { display:block; width:min(100%,560px); margin-top:14px; }
+.noxen-console-download {
+  display:inline-flex; margin-top:14px; padding:9px 12px;
+  border:1px solid rgba(134,180,151,.3); border-radius:8px; color:#a9e5bd;
+  text-decoration:none; background:rgba(27,56,39,.3);
+}
+.noxen-console-download:hover { background:rgba(27,56,39,.55); }
