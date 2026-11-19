@@ -210,7 +210,7 @@ export default function WorkbenchConsole({
       }
       if (command === "/bench") {
         const targets = models.filter(model => !model.locked).map(model => "  • " + model.label + " [" + model.name + "]");
-        appendEvent("system", "BENCHMARK DRY RUN · " + targets.length + " model target(s) discovered\\n" + targets.join("\\n"));
+        appendEvent("system", "BENCHMARK DRY RUN · " + targets.length + " model target(s) discovered\n" + targets.join("\n"));
         appendEvent("warning", "DRY RUN COMPLETE · zero model requests sent · zero AI responses generated.");
       } else {
         appendEvent("system", "COMMAND RECOGNIZED · " + command + " · input validated for the console test harness.");
