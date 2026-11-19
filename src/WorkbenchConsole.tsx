@@ -42,7 +42,6 @@ type Props = {
   isOnline: boolean;
   running: boolean;
   activity: string | null;
-  testingMode?: boolean;
   onModelChange: (model: string) => void;
   onAutoModelRoutingChange: (enabled: boolean) => void;
   onRun: (prompt: string, options?: ConsoleRunOptions) => Promise<void>;
@@ -92,8 +91,7 @@ export default function WorkbenchConsole({
   onAutoModelRoutingChange,
   onRun,
   onStop,
-  onClear,
-  testingMode = false
+  onClear
 }: Props) {
   const [input, setInput] = useState("");
   const [events, setEvents] = useState<ConsoleEvent[]>([
@@ -184,11 +182,6 @@ export default function WorkbenchConsole({
     appendEvent("command", "$ " + line);
 
     if (!line.startsWith("/")) {
-      if (testingMode) {
-        appendEvent("system", "INPUT CAPTURED · " + line.length + " character(s) · no network request sent");
-        appendEvent("warning", "AI RESPONSE DISABLED · this test console records input but does not call a model or generate a reply.");
-        return;
-      }
       appendEvent("system", "Dispatching request through the standard NOXEN response pipeline.");
       await onRun(line, { toolOverride: "none" });
       appendEvent("success", "Request returned. See the model-labelled response in the output stream.");
@@ -199,26 +192,6 @@ export default function WorkbenchConsole({
     const command = (firstSpace < 0 ? line : line.slice(0, firstSpace)).toLowerCase();
     const argument = firstSpace < 0 ? "" : line.slice(firstSpace + 1).trim();
 
-    const executionCommands = new Set([
-      "/research", "/code", "/write", "/study", "/data", "/ideas",
-      "/youtube", "/inspect", "/reverse", "/image", "/bench"
-    ]);
-    if (testingMode && executionCommands.has(command)) {
-      if (!argument) {
-        appendEvent("warning", "Usage: " + command + " <input>. Command parser is active; execution is disabled.");
-        return;
-      }
-      if (command === "/bench") {
-        const targets = models.filter(model => !model.locked).map(model => "  • " + model.label + " [" + model.name + "]");
-        appendEvent("system", "BENCHMARK DRY RUN · " + targets.length + " model target(s) discovered\n" + targets.join("\n"));
-        appendEvent("warning", "DRY RUN COMPLETE · zero model requests sent · zero AI responses generated.");
-      } else {
-        appendEvent("system", "COMMAND RECOGNIZED · " + command + " · input validated for the console test harness.");
-        appendEvent("warning", "EXECUTION BLOCKED BY TEST MODE · no API, browser, search, image, or model request was sent.");
-      }
-      return;
-    }
-
     switch (command) {
       case "/help":
       case "/?":
@@ -226,7 +199,7 @@ export default function WorkbenchConsole({
         return;
       case "/status":
         appendEvent("success", [
-          "CONNECTION: " + (testingMode ? "TEST LAB · NO BACKEND" : isOnline ? "ONLINE" : "OFFLINE"),
+          "CONNECTION: " + (isOnline ? "ONLINE" : "OFFLINE"),
           "SELECTED MODEL: " + displayModel(selectedModel),
           "ROUTING: " + (autoModelRouting ? "AUTOMATIC" : "MANUAL"),
           "RUN STATE: " + (running || benchmarkRunning ? "BUSY" : "READY"),
@@ -354,7 +327,7 @@ export default function WorkbenchConsole({
   }, [
     appendEvent, autoModelRouting, benchmarkRunning, clearConsole, exportTranscript,
     isOnline, messages.length, models, onAutoModelRoutingChange, onModelChange,
-    onRun, onStop, running, runModelBenchmark, selectedModel, testingMode
+    onRun, onStop, running, runModelBenchmark, selectedModel
   ]);
 
   const busy = running || benchmarkRunning;
@@ -372,9 +345,9 @@ export default function WorkbenchConsole({
           <p>Live model requests, tool dispatch, sequential benchmarks, and response inspection.</p>
         </div>
         <div className="noxen-console-heading-actions">
-          <span className={"noxen-console-status " + (testingMode ? "testing" : isOnline ? "online" : "offline")}>
-            {testingMode ? <FlaskConical size={14} /> : isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
-            {testingMode ? "TEST MODE" : isOnline ? "ONLINE" : "OFFLINE"}
+          <span className={"noxen-console-status " + (isOnline ? "online" : "offline")}>
+            {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
+            {isOnline ? "ONLINE" : "OFFLINE"}
           </span>
           <button type="button" className="noxen-console-icon-button" onClick={exportTranscript} title="Export transcript" aria-label="Export transcript"><Download size={16} /></button>
           <button type="button" className="noxen-console-icon-button" onClick={clearConsole} title="Clear console" aria-label="Clear console"><Trash2 size={16} /></button>
@@ -385,7 +358,7 @@ export default function WorkbenchConsole({
         <div className="noxen-console-windowbar">
           <div className="noxen-console-windowdots" aria-hidden="true"><i /><i /><i /></div>
           <div className="noxen-console-window-title"><Terminal size={13} /> noxen://console/session</div>
-          <span className="noxen-console-window-state"><span /> {testingMode ? "TEST HARNESS" : "SESSION ACTIVE"}</span>
+          <span className="noxen-console-window-state"><span /> SESSION ACTIVE</span>
         </div>
 
         <div className="noxen-console-toolbar">
@@ -401,7 +374,7 @@ export default function WorkbenchConsole({
             <span>AUTO ROUTE</span>
           </label>
           <div className="noxen-console-toolbar-meta">
-            <span><Radio size={12} /> {testingMode ? "TEST MODE" : busy ? "BUSY" : "READY"}</span>
+            <span><Radio size={12} /> {busy ? "BUSY" : "READY"}</span>
             <span><Bot size={12} /> {messages.length} MSG</span>
           </div>
         </div>
@@ -419,7 +392,7 @@ export default function WorkbenchConsole({
             <div className="noxen-console-welcome-mark"><Terminal size={18} /></div>
             <div>
               <strong>NOXEN CONSOLE <span>v1.0</span></strong>
-              <p>{testingMode ? "Command parser · model target selection · diagnostics" : "Live model runtime · tool dispatch · response inspection"}</p>
+              <p>Live model runtime · tool dispatch · response inspection</p>
             </div>
           </div>
 
@@ -500,7 +473,7 @@ export default function WorkbenchConsole({
         </form>
 
         <div className="noxen-console-footer">
-          <span><ShieldCheck size={12} /> {testingMode ? "NO MODEL CALLS · NO TOOL EXECUTION · NO BACKEND" : "NOXEN-managed commands only · no host shell access"}</span>
+          <span><ShieldCheck size={12} /> NOXEN-managed commands only · no host shell access</span>
           <span><Zap size={12} /> {autoModelRouting ? "AUTOMATIC ROUTING" : "MANUAL MODEL"} · {displayModel(selectedModel).toUpperCase()}</span>
         </div>
       </div>
