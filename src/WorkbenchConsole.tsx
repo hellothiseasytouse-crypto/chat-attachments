@@ -56,17 +56,17 @@ const COMMANDS = [
   ["/models", "List model options and access"],
   ["/model <name>", "Select Core, Nova, Swift, Studio, or Studio Plus"],
   ["/auto on|off", "Toggle automatic model routing"],
-  ["/research <prompt>", "Recognize a research command · execution disabled in Test Lab"],
-  ["/code <prompt>", "Recognize a coding command · execution disabled in Test Lab"],
-  ["/write <prompt>", "Recognize a writing command · execution disabled in Test Lab"],
-  ["/study <prompt>", "Recognize a study command · execution disabled in Test Lab"],
-  ["/data <prompt>", "Recognize a data command · execution disabled in Test Lab"],
-  ["/ideas <prompt>", "Recognize an ideas command · execution disabled in Test Lab"],
-  ["/youtube <query>", "Recognize a video-search command · execution disabled"],
-  ["/inspect <url>", "Recognize a site-inspection command · execution disabled"],
-  ["/reverse <url>", "Recognize a site-analysis command · execution disabled"],
-  ["/image <prompt>", "Recognize an image command · generation disabled"],
-  ["/bench <prompt>", "Preview benchmark targets without running models"],
+  ["/research <prompt>", "Send a request with live web research enabled"],
+  ["/code <prompt>", "Send a coding-focused prompt to the selected model"],
+  ["/write <prompt>", "Send a writing-focused prompt to the selected model"],
+  ["/study <prompt>", "Send a study-focused prompt to the selected model"],
+  ["/data <prompt>", "Send a data-analysis prompt to the selected model"],
+  ["/ideas <prompt>", "Send a brainstorming prompt to the selected model"],
+  ["/youtube <query>", "Ask NOXEN to search YouTube for matching videos"],
+  ["/inspect <url>", "Ask NOXEN to inspect the public URL"],
+  ["/reverse <url>", "Ask NOXEN to analyse the public website"],
+  ["/image <prompt>", "Send an image-generation request to the NOXEN chat backend"],
+  ["/bench <prompt>", "Run the same prompt sequentially on each unlocked model"],
   ["/export", "Download this console transcript as Markdown"],
   ["/clear", "Clear the console transcript"],
   ["/stop", "Stop the current response or benchmark"]
@@ -369,7 +369,7 @@ export default function WorkbenchConsole({
         <div>
           <span className="noxen-console-eyebrow"><Terminal size={14} /> NOXEN DEVELOPER WORKSPACE</span>
           <h1>Console<span>.</span></h1>
-          <p>Command parser, model selection, and diagnostic controls. Model execution is disabled here.</p>
+          <p>Live model requests, tool dispatch, sequential benchmarks, and response inspection.</p>
         </div>
         <div className="noxen-console-heading-actions">
           <span className={"noxen-console-status " + (testingMode ? "testing" : isOnline ? "online" : "offline")}>
@@ -419,7 +419,7 @@ export default function WorkbenchConsole({
             <div className="noxen-console-welcome-mark"><Terminal size={18} /></div>
             <div>
               <strong>NOXEN CONSOLE <span>v1.0</span></strong>
-              <p>{testingMode ? "Command parsing · model target selection · dry-run diagnostics" : "Unified model runtime · tool dispatch · response inspection"}</p>
+              <p>{testingMode ? "Command parser · model target selection · diagnostics" : "Live model runtime · tool dispatch · response inspection"}</p>
             </div>
           </div>
 
@@ -509,10 +509,10 @@ export default function WorkbenchConsole({
         <div className="noxen-console-command-help-title"><Command size={15} /> COMMAND QUICK REFERENCE</div>
         <div className="noxen-console-command-grid">
           {[
-            ["/bench", "Preview model targets without inference"],
-            ["/inspect", "Recognize site-inspection command"],
-            ["/reverse", "Recognize site-analysis command"],
-            ["/research", "Recognize research command"],
+            ["/bench", "Run a sequential model comparison"],
+            ["/inspect", "Inspect a public website"],
+            ["/reverse", "Analyse a public website"],
+            ["/research", "Run live web research"],
             ["/export", "Save the transcript as Markdown"],
             ["/status", "Inspect active runtime settings"]
           ].map(([command, description]) => (
