@@ -1,18 +1,23 @@
-# NOXEN Console Test Lab
+# NOXEN Console
 
-A standalone Vite + React playground for the NOXEN terminal console component.
+A standalone Vite + React terminal workspace connected to NOXEN's live chat API.
 
-## What it does
+## Features
 
-- Hosts the reusable `WorkbenchConsole` component.
-- Lets you try the command parser, model selector, automatic-routing toggle, transcript, export, clear, stop, and sequential benchmark UI.
-- Runs in console-only test mode: command and model target diagnostics are logged, while model replies, API calls, external tools, and inference are disabled.
+- Live model responses from NOXEN Core, Nova, Swift, and Studio.
+- Terminal-style command interface, model selection, automatic routing, and sequential `/bench` runs.
+- No typewriter effect or chat-style response animations.
+- Transcript export, clear, and stop controls.
 
-## Important runtime boundary
+## Runtime architecture
 
-This is a UI and command-flow test harness only. It is not connected to NOXEN's private API, Supabase session, production model providers, search, image generation, or other live tools. Normal prompts are logged as terminal diagnostics, but no AI response is generated. Tool commands are recognized then blocked, and `/bench` is a dry run that lists model targets without inference. The playground deliberately has no production credentials.
+The browser sends requests to this project's same-origin `/api/chat` relay. The relay forwards a strict allowlist of request fields to the canonical NOXEN endpoint:
 
-The real app integration remains in the NOXEN repository. Keep live model execution and tool credentials inside the authenticated NOXEN application.
+`https://noxenlabs.vercel.app/api/chat`
+
+Provider credentials remain on the NOXEN server. They are never copied into this repository or exposed to the browser. Studio Plus is intentionally unavailable in this standalone lab because its backend requires a verified owner session; use Studio Plus from the signed-in NOXEN app.
+
+The main NOXEN website and its frontend are not modified by this project.
 
 ## Run locally
 
@@ -20,6 +25,8 @@ The real app integration remains in the NOXEN repository. Keep live model execut
 npm install
 npm run dev
 ```
+
+For local use, set up a local serverless-function emulator or deploy to Vercel; the `api/chat.ts` relay is a Vercel Function.
 
 ## Build
 
