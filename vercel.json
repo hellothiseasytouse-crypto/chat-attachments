@@ -3,15 +3,44 @@
     {
       "source": "/api/chat",
       "destination": "https://noxenlabs.vercel.app/api/chat"
+    },
+    {
+      "source": "/api/search",
+      "destination": "https://noxenlabs.vercel.app/api/search"
+    },
+    {
+      "source": "/api/youtube",
+      "destination": "https://noxenlabs.vercel.app/api/youtube"
+    },
+    {
+      "source": "/api/inspect",
+      "destination": "https://noxenlabs.vercel.app/api/inspect"
+    },
+    {
+      "source": "/api/image",
+      "destination": "https://noxenlabs.vercel.app/api/image"
+    },
+    {
+      "source": "/api/media",
+      "destination": "https://noxenlabs.vercel.app/api/media"
     }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     }
   ]
