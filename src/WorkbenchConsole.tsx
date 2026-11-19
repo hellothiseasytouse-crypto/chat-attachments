@@ -392,7 +392,7 @@ export default function WorkbenchConsole({
             <div className="noxen-console-welcome-mark"><Terminal size={18} /></div>
             <div>
               <strong>NOXEN CONSOLE <span>v1.0</span></strong>
-              <p>{testingMode ? "Command parser · model target selection · diagnostics" : "Live model runtime · tool dispatch · response inspection"}</p>
+              <p>Live model runtime · tool dispatch · response inspection</p>
             </div>
           </div>
 
