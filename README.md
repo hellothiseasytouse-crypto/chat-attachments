@@ -1,24 +1,37 @@
 # NOXEN Console Test Lab
 
-A standalone terminal-first test site for the real NOXEN chat models.
+A standalone terminal-style workspace for trying actual NOXEN model and tool endpoints.
 
-## Live behavior
+## Start here
 
-- Sends text prompts to the official NOXEN production chat API through a same-origin Vercel rewrite.
-- Streams no typing effect: the completed response is rendered immediately as terminal output.
-- Supports manual model selection and automatic model routing.
-- `/bench` runs the same prompt sequentially across unlocked models and labels each response with the actual returned model.
-- `/research` enables the backend's web-search path.
-- `/help`, `/status`, `/models`, `/model`, `/auto`, `/export`, `/clear`, and `/stop` are local console commands.
+- `/ping` — send a real inference request and measure response time.
+- `/models` and `/model nova` — inspect and choose the model.
+- Type a normal prompt — chat with the selected model.
+- `/bench <prompt>` — compare the same prompt across available models.
+- `/help` — display the built-in manual and examples.
 
-## Model access
+## Live NOXEN features
 
-Core, Nova, Swift, and Studio requests use the existing production chat service. Studio Plus is displayed as locked because the production endpoint requires a verified owner access token; this standalone playground does not bypass that control.
+- Model inference for Core, Nova, Swift and Studio through `/api/chat`.
+- Web research through `/research` and direct web results through `/search`.
+- YouTube search and public metadata through `/youtube`.
+- Public webpage inspection through `/inspect`.
+- Multi-page public website reconstruction through `/reverse`.
+- Coding, writing, study, data and idea response profiles.
+- Image, video, audio and 3D generation through `/image`, `/video`, `/audio`, `/3d`. These require `--confirm` because the configured media provider may consume credits.
 
-## Account isolation
+## Terminal behavior
 
-The console keeps its transcript in the browser session and does not load NOXEN Supabase memories, prior account chats, or connected plugin grants. Requests are processed by NOXEN's production AI backend. No API keys are stored in this repository or sent from the browser.
+- Tab completes command names.
+- Up and Down navigate recent commands.
+- Ctrl+L clears the session.
+- Ctrl+C stops the active request.
+- `/history`, `/export`, `/clear`, `/stop` manage the local transcript.
+
+## Not connected
+
+The separate console does not load personal NOXEN memories, connected Google plugins, prior account conversations or the Studio Plus owner session. It does not provide arbitrary operating-system shell access. No provider API keys are stored in this repository or sent to the browser.
 
 ## Hosting
 
-This is a Vite + React app deployed as a separate Vercel project named `noxen-console-lab`. The project rewrite in `vercel.json` forwards only `/api/chat` to `https://noxenlabs.vercel.app/api/chat`.
+This Vite + React app is a separate Vercel project. Same-origin API rewrites forward supported requests to `https://noxenlabs.vercel.app/api/*`.
