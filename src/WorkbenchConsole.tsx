@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import {
   Activity, ArrowUpRight, Bot, CircleHelp, Code2, Command, Cpu, Download,
   LoaderCircle, Play, Radio, Search, ShieldCheck, Square, Terminal, Trash2,
-  Wifi, WifiOff, Zap
+  Wifi, WifiOff, Zap, FlaskConical
 } from "lucide-react";
 import "./workbench-console.css";
 
@@ -42,6 +42,7 @@ type Props = {
   isOnline: boolean;
   running: boolean;
   activity: string | null;
+  testingMode?: boolean;
   onModelChange: (model: string) => void;
   onAutoModelRoutingChange: (enabled: boolean) => void;
   onRun: (prompt: string, options?: ConsoleRunOptions) => Promise<void>;
@@ -55,17 +56,17 @@ const COMMANDS = [
   ["/models", "List model options and access"],
   ["/model <name>", "Select Core, Nova, Swift, Studio, or Studio Plus"],
   ["/auto on|off", "Toggle automatic model routing"],
-  ["/research <prompt>", "Run a request with the web-research tool"],
-  ["/code <prompt>", "Run a coding-focused request"],
-  ["/write <prompt>", "Run a writing-focused request"],
-  ["/study <prompt>", "Run a study-focused request"],
-  ["/data <prompt>", "Run a data-focused request"],
-  ["/ideas <prompt>", "Run a brainstorming request"],
-  ["/youtube <query>", "Search for YouTube videos"],
-  ["/inspect <url>", "Inspect a public website"],
-  ["/reverse <url>", "Build a read-only public-site reconstruction report"],
-  ["/image <prompt>", "Generate an image through NOXEN"],
-  ["/bench <prompt>", "Run the same prompt across available models, one at a time"],
+  ["/research <prompt>", "Recognize a research command · execution disabled in Test Lab"],
+  ["/code <prompt>", "Recognize a coding command · execution disabled in Test Lab"],
+  ["/write <prompt>", "Recognize a writing command · execution disabled in Test Lab"],
+  ["/study <prompt>", "Recognize a study command · execution disabled in Test Lab"],
+  ["/data <prompt>", "Recognize a data command · execution disabled in Test Lab"],
+  ["/ideas <prompt>", "Recognize an ideas command · execution disabled in Test Lab"],
+  ["/youtube <query>", "Recognize a video-search command · execution disabled"],
+  ["/inspect <url>", "Recognize a site-inspection command · execution disabled"],
+  ["/reverse <url>", "Recognize a site-analysis command · execution disabled"],
+  ["/image <prompt>", "Recognize an image command · generation disabled"],
+  ["/bench <prompt>", "Preview benchmark targets without running models"],
   ["/export", "Download this console transcript as Markdown"],
   ["/clear", "Clear the console transcript"],
   ["/stop", "Stop the current response or benchmark"]
@@ -91,7 +92,8 @@ export default function WorkbenchConsole({
   onAutoModelRoutingChange,
   onRun,
   onStop,
-  onClear
+  onClear,
+  testingMode = false
 }: Props) {
   const [input, setInput] = useState("");
   const [events, setEvents] = useState<ConsoleEvent[]>([
@@ -182,6 +184,11 @@ export default function WorkbenchConsole({
     appendEvent("command", "$ " + line);
 
     if (!line.startsWith("/")) {
+      if (testingMode) {
+        appendEvent("system", "INPUT CAPTURED · " + line.length + " character(s) · no network request sent");
+        appendEvent("warning", "AI RESPONSE DISABLED · this test console records input but does not call a model or generate a reply.");
+        return;
+      }
       appendEvent("system", "Dispatching request through the standard NOXEN response pipeline.");
       await onRun(line, { toolOverride: "none" });
       appendEvent("success", "Request returned. See the model-labelled response in the output stream.");
@@ -192,6 +199,26 @@ export default function WorkbenchConsole({
     const command = (firstSpace < 0 ? line : line.slice(0, firstSpace)).toLowerCase();
     const argument = firstSpace < 0 ? "" : line.slice(firstSpace + 1).trim();
 
+    const executionCommands = new Set([
+      "/research", "/code", "/write", "/study", "/data", "/ideas",
+      "/youtube", "/inspect", "/reverse", "/image", "/bench"
+    ]);
+    if (testingMode && executionCommands.has(command)) {
+      if (!argument) {
+        appendEvent("warning", "Usage: " + command + " <input>. Command parser is active; execution is disabled.");
+        return;
+      }
+      if (command === "/bench") {
+        const targets = models.filter(model => !model.locked).map(model => "  • " + model.label + " [" + model.name + "]");
+        appendEvent("system", "BENCHMARK DRY RUN · " + targets.length + " model target(s) discovered\n" + targets.join("\n"));
+        appendEvent("warning", "DRY RUN COMPLETE · zero model requests sent · zero AI responses generated.");
+      } else {
+        appendEvent("system", "COMMAND RECOGNIZED · " + command + " · input validated for the console test harness.");
+        appendEvent("warning", "EXECUTION BLOCKED BY TEST MODE · no API, browser, search, image, or model request was sent.");
+      }
+      return;
+    }
+
     switch (command) {
       case "/help":
       case "/?":
@@ -199,7 +226,7 @@ export default function WorkbenchConsole({
         return;
       case "/status":
         appendEvent("success", [
-          "CONNECTION: " + (isOnline ? "ONLINE" : "OFFLINE"),
+          "CONNECTION: " + (testingMode ? "TEST LAB · NO BACKEND" : isOnline ? "ONLINE" : "OFFLINE"),
           "SELECTED MODEL: " + displayModel(selectedModel),
           "ROUTING: " + (autoModelRouting ? "AUTOMATIC" : "MANUAL"),
           "RUN STATE: " + (running || benchmarkRunning ? "BUSY" : "READY"),
@@ -327,7 +354,7 @@ export default function WorkbenchConsole({
   }, [
     appendEvent, autoModelRouting, benchmarkRunning, clearConsole, exportTranscript,
     isOnline, messages.length, models, onAutoModelRoutingChange, onModelChange,
-    onRun, onStop, running, runModelBenchmark, selectedModel
+    onRun, onStop, running, runModelBenchmark, selectedModel, testingMode
   ]);
 
   const busy = running || benchmarkRunning;
@@ -342,12 +369,12 @@ export default function WorkbenchConsole({
         <div>
           <span className="noxen-console-eyebrow"><Terminal size={14} /> NOXEN DEVELOPER WORKSPACE</span>
           <h1>Console<span>.</span></h1>
-          <p>A terminal-style surface for running NOXEN models, tools, and controlled benchmarks.</p>
+          <p>Command parser, model selection, and diagnostic controls. Model execution is disabled here.</p>
         </div>
         <div className="noxen-console-heading-actions">
-          <span className={"noxen-console-status " + (isOnline ? "online" : "offline")}>
-            {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
-            {isOnline ? "ONLINE" : "OFFLINE"}
+          <span className={"noxen-console-status " + (testingMode ? "testing" : isOnline ? "online" : "offline")}>
+            {testingMode ? <FlaskConical size={14} /> : isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
+            {testingMode ? "TEST MODE" : isOnline ? "ONLINE" : "OFFLINE"}
           </span>
           <button type="button" className="noxen-console-icon-button" onClick={exportTranscript} title="Export transcript" aria-label="Export transcript"><Download size={16} /></button>
           <button type="button" className="noxen-console-icon-button" onClick={clearConsole} title="Clear console" aria-label="Clear console"><Trash2 size={16} /></button>
@@ -358,7 +385,7 @@ export default function WorkbenchConsole({
         <div className="noxen-console-windowbar">
           <div className="noxen-console-windowdots" aria-hidden="true"><i /><i /><i /></div>
           <div className="noxen-console-window-title"><Terminal size={13} /> noxen://console/session</div>
-          <span className="noxen-console-window-state"><span /> SESSION ACTIVE</span>
+          <span className="noxen-console-window-state"><span /> {testingMode ? "TEST HARNESS" : "SESSION ACTIVE"}</span>
         </div>
 
         <div className="noxen-console-toolbar">
@@ -374,7 +401,7 @@ export default function WorkbenchConsole({
             <span>AUTO ROUTE</span>
           </label>
           <div className="noxen-console-toolbar-meta">
-            <span><Radio size={12} /> {busy ? "BUSY" : "READY"}</span>
+            <span><Radio size={12} /> {testingMode ? "TEST MODE" : busy ? "BUSY" : "READY"}</span>
             <span><Bot size={12} /> {messages.length} MSG</span>
           </div>
         </div>
@@ -392,7 +419,7 @@ export default function WorkbenchConsole({
             <div className="noxen-console-welcome-mark"><Terminal size={18} /></div>
             <div>
               <strong>NOXEN CONSOLE <span>v1.0</span></strong>
-              <p>Unified model runtime · tool dispatch · response inspection</p>
+              <p>{testingMode ? "Command parsing · model target selection · dry-run diagnostics" : "Unified model runtime · tool dispatch · response inspection"}</p>
             </div>
           </div>
 
@@ -473,7 +500,7 @@ export default function WorkbenchConsole({
         </form>
 
         <div className="noxen-console-footer">
-          <span><ShieldCheck size={12} /> NOXEN-managed commands only · no host shell access</span>
+          <span><ShieldCheck size={12} /> {testingMode ? "NO MODEL CALLS · NO TOOL EXECUTION · NO BACKEND" : "NOXEN-managed commands only · no host shell access"}</span>
           <span><Zap size={12} /> {autoModelRouting ? "AUTOMATIC ROUTING" : "MANUAL MODEL"} · {displayModel(selectedModel).toUpperCase()}</span>
         </div>
       </div>
@@ -482,10 +509,10 @@ export default function WorkbenchConsole({
         <div className="noxen-console-command-help-title"><Command size={15} /> COMMAND QUICK REFERENCE</div>
         <div className="noxen-console-command-grid">
           {[
-            ["/bench", "Compare available models with one prompt"],
-            ["/inspect", "Inspect a public website"],
-            ["/reverse", "Build a read-only site blueprint"],
-            ["/research", "Run live web research"],
+            ["/bench", "Preview model targets without inference"],
+            ["/inspect", "Recognize site-inspection command"],
+            ["/reverse", "Recognize site-analysis command"],
+            ["/research", "Recognize research command"],
             ["/export", "Save the transcript as Markdown"],
             ["/status", "Inspect active runtime settings"]
           ].map(([command, description]) => (

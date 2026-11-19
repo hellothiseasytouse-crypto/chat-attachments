@@ -50,6 +50,7 @@
   letter-spacing: .08em;
 }
 .noxen-console-status.online { color: #9fe7b8; }
+.noxen-console-status.testing { color: #dfbb83; border-color: #665134; }
 .noxen-console-status.offline { color: #e7bb78; }
 .noxen-console-icon-button {
   display: grid;
