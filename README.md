@@ -1,37 +1,38 @@
-# NOXEN Console Test Lab
+# NOXEN Console Test Workstation
 
-A standalone terminal-style workspace for trying actual NOXEN model and tool endpoints.
+A terminal-first workspace for exercising the real NOXEN services through the official production API.
 
-## Start here
+## Commands
 
-- `/ping` — send a real inference request and measure response time.
-- `/models` and `/model nova` — inspect and choose the model.
-- Type a normal prompt — chat with the selected model.
-- `/bench <prompt>` — compare the same prompt across available models.
-- `/help` — display the built-in manual and examples.
+| Command | What it tests |
+| --- | --- |
+| `/ping` | Real model response and request latency |
+| `/models`, `/model <name>`, `/auto on/off` | Model selection and automatic routing |
+| `/bench <prompt>` | Sequential comparison of Core, Nova, Swift, and Studio |
+| `/research <prompt>` | Live web research through NOXEN chat |
+| `/code`, `/write`, `/study`, `/data`, `/ideas` | NOXEN task-specific response profiles |
+| `/youtube <query>` | YouTube result lookup, public metadata, and model analysis |
+| `/inspect <url>` | Public HTML inspection and heuristic security indicators |
+| `/reverse <url>` | Multi-page public-site inspection and reconstruction blueprint |
+| `/image <prompt>` | NOXEN image generation |
+| `/images <query>` | Existing web image lookup |
+| Attach button or `/attach` | Up to 3 compressed images and text/code files for analysis |
+| `/ping`, `/status`, `/help`, `/export`, `/clear`, `/stop` | Diagnostics and session controls |
 
-## Live NOXEN features
+## Model access
 
-- Model inference for Core, Nova, Swift and Studio through `/api/chat`.
-- Web research through `/research` and direct web results through `/search`.
-- YouTube search and public metadata through `/youtube`.
-- Public webpage inspection through `/inspect`.
-- Multi-page public website reconstruction through `/reverse`.
-- Coding, writing, study, data and idea response profiles.
-- Image, video, audio and 3D generation through `/image`, `/video`, `/audio`, `/3d`. These require `--confirm` because the configured media provider may consume credits.
+Core, Nova, Swift, and Studio use the existing production chat endpoint. Studio Plus remains locked because its endpoint requires a verified owner session. The standalone playground does not bypass that rule.
 
-## Terminal behavior
+## Isolation and security
 
-- Tab completes command names.
-- Up and Down navigate recent commands.
-- Ctrl+L clears the session.
-- Ctrl+C stops the active request.
-- `/history`, `/export`, `/clear`, `/stop` manage the local transcript.
-
-## Not connected
-
-The separate console does not load personal NOXEN memories, connected Google plugins, prior account conversations or the Studio Plus owner session. It does not provide arbitrary operating-system shell access. No provider API keys are stored in this repository or sent to the browser.
+- The terminal transcript is held in browser memory and is not synced to a NOXEN account.
+- The playground does not load Supabase sessions, saved memories, private chats, or connected plugin grants.
+- API keys remain on NOXEN's production server; they are never included in browser code.
+- Website inspection uses NOXEN's existing public-URL validation and read-only scanner.
+- Arbitrary operating-system shell commands are not executed.
+- Text/code attachments are read locally in the browser and sent as part of the selected prompt; images are compressed client-side and posted to NOXEN's existing vision path.
 
 ## Hosting
 
-This Vite + React app is a separate Vercel project. Same-origin API rewrites forward supported requests to `https://noxenlabs.vercel.app/api/*`.
+Standalone Vite + React project deployed as `noxen-console-lab`.
+Only the explicit routes in `vercel.json` are proxied to `https://noxenlabs.vercel.app`.
