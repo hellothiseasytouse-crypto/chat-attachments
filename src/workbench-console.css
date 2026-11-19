@@ -389,3 +389,44 @@
   text-decoration:none; background:rgba(27,56,39,.3);
 }
 .noxen-console-download:hover { background:rgba(27,56,39,.55); }
+
+
+/* v2 terminal workstation controls */
+.top-pill.ready { color: #a5e6bd; border-color: #355c42; }
+.top-pill.unavailable { color: #efaa9b; border-color: #714137; }
+.pulse-dot.live { background: #90d7a3; box-shadow: 0 0 9px rgba(144,215,163,.5); }
+.runtime-card strong.runtime-ok { color: #a5e6bd; }
+.runtime-card strong.runtime-warn { color: #dfbd83; }
+.playground-intro code { color: #a8e4bc; background: #17251b; border: 1px solid #2c4a35; border-radius: 5px; padding: 2px 5px; font: 11px ui-monospace, monospace; }
+.noxen-console-quickbar { flex-wrap: wrap; }
+.noxen-console-start { margin: 20px 0 28px; padding: 20px; border: 1px solid #2d4335; border-radius: 10px; background: linear-gradient(135deg, rgba(24,43,30,.6), rgba(13,21,16,.5)); }
+.noxen-console-start-title { color: #9bd8aa; font: 700 10px ui-monospace, monospace; letter-spacing: .16em; }
+.noxen-console-start > p { margin: 7px 0 15px; color: #9cafa2; font-size: 12px; }
+.noxen-console-start-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.noxen-console-start-grid button { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px 11px; border: 1px solid #2b4032; border-radius: 7px; text-align: left; background: rgba(10,18,12,.7); color: #b8c9bd; cursor: pointer; }
+.noxen-console-start-grid button:hover { border-color: #547c5e; background: #14251a; }
+.noxen-console-start-grid code { color: #a7e5b8; font: 700 11px ui-monospace,monospace; white-space: nowrap; }
+.noxen-console-start-grid span { overflow: hidden; color: #8d9f92; font-size: 10px; text-overflow: ellipsis; }
+.noxen-console-attachments { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 9px 12px; border-top: 1px solid #24352a; background: #0d1510; }
+.noxen-console-attachment { display: inline-flex; align-items: center; gap: 6px; max-width: 230px; padding: 6px 8px; border: 1px solid #344b39; border-radius: 6px; background: #152219; color: #b8cabe; font: 10px ui-monospace,monospace; }
+.noxen-console-attachment > svg { color: #a5e6bd; flex: 0 0 auto; }
+.noxen-console-attachment button { display: inline-grid; place-items: center; margin-left: 3px; padding: 1px; border: 0; background: transparent; color: #a0b4a6; cursor: pointer; }
+.noxen-console-attachment button:hover { color: #f0a89a; }
+.noxen-console-clear-files { margin-left: auto; border: 0; background: transparent; color: #829689; font: 700 9px ui-monospace,monospace; cursor: pointer; }
+.noxen-console-file-meta { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+.noxen-console-file-meta span { display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border: 1px solid #2a4031; border-radius: 5px; color: #a9c2af; background: #142018; font: 10px ui-monospace,monospace; }
+.noxen-console-image-output { display: inline-grid; gap: 7px; max-width: min(640px,100%); margin-top: 12px; color: #9bdcae; text-decoration: none; }
+.noxen-console-image-output img { display: block; max-width: 100%; max-height: 540px; border: 1px solid #314b37; border-radius: 9px; object-fit: contain; background: #080d09; }
+.noxen-console-image-output span { display: inline-flex; align-items: center; gap: 5px; font: 700 9px ui-monospace,monospace; letter-spacing: .12em; }
+.noxen-console-attach-button { display: grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px; border: 1px solid #2b4032; border-radius: 7px; background: #142119; color: #9bcfab; cursor: pointer; }
+.noxen-console-attach-button:hover:not(:disabled) { border-color: #5d8667; background: #1b3021; }
+.noxen-console-attach-button:disabled { opacity: .45; cursor: not-allowed; }
+.noxen-console-working > svg { flex: 0 0 auto; color: #a5e6bd; animation: none !important; }
+.noxen-console-cursor-line i { animation: none !important; }
+@media (max-width: 760px) {
+  .noxen-console-start { padding: 13px; }
+  .noxen-console-start-grid { grid-template-columns: 1fr; }
+  .noxen-console-attachments { padding: 8px; }
+  .noxen-console-attachment { max-width: 100%; }
+  .noxen-console-clear-files { margin-left: 0; }
+}
