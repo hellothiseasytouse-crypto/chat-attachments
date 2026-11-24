@@ -83,7 +83,7 @@ export default function GpuInferencePanel() {
 
       <div className="gpu-lab-notice">
         <ShieldCheck size={16} />
-        <div><strong>Isolated console testing only</strong><p>This lab does not unlock Studio Plus on the production NOXEN site or replace its verified-owner check. Free GPU sessions are temporary; a disconnected session must be restarted.</p></div>
+        <div><strong>Isolated console testing only</strong><p>This lab does not unlock Studio Plus on the production NOXEN site or replace its verified-owner check. Kimi K3 is 2.8T parameters and is not realistically loadable on ordinary free notebook storage; the route is ready for a compatible worker, not a claim that one is running.</p></div>
       </div>
 
       <div className="gpu-lab-grid">
