@@ -1,7 +1,8 @@
+declare const process: { env: Record<string, string | undefined> };
 type ApiRequest = { method?: string };
 type ApiResponse = { status(code: number): ApiResponse; json(body: unknown): void; setHeader(name: string, value: string): void };
 function safeHttpsUrl(value: string): string | null {
-  try { const url = new URL(value); if (url.protocol !== "https:") return null; return url.toString().replace(/\\/$/, ""); } catch { return null; }
+  try { const url = new URL(value); if (url.protocol !== "https:") return null; const normalized = url.toString(); return normalized.endsWith("/") ? normalized.slice(0, -1) : normalized; } catch { return null; }
 }
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   res.setHeader("Cache-Control", "no-store");
