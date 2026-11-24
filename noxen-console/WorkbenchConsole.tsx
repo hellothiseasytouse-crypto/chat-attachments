@@ -34,6 +34,20 @@ type ConsoleEvent = {
   at: number;
 };
 
+export type StudioPlusArenaModelResult = {
+  ok: boolean;
+  model: string;
+  answer?: string;
+  provider?: string;
+  durationMs?: number;
+  error?: string;
+};
+
+export type StudioPlusArenaResult = {
+  original: StudioPlusArenaModelResult;
+  v2: StudioPlusArenaModelResult;
+};
+
 type Props = {
   messages: ConsoleMessage[];
   models: ConsoleModel[];
@@ -45,6 +59,7 @@ type Props = {
   onModelChange: (model: string) => void;
   onAutoModelRoutingChange: (enabled: boolean) => void;
   onRun: (prompt: string, options?: ConsoleRunOptions) => Promise<void>;
+  onRunStudioPlusArena?: (prompt: string, signal: AbortSignal) => Promise<StudioPlusArenaResult>;
   onStop: () => void;
   onClear: () => void;
 };
@@ -66,6 +81,7 @@ const COMMANDS = [
   ["/reverse <url>", "Build a read-only public-site reconstruction report"],
   ["/image <prompt>", "Generate an image through NOXEN"],
   ["/bench <prompt>", "Run the same prompt across available models, one at a time"],
+  ["/arena <prompt>", "Compare Studio Plus and Studio Plus V2 side by side on the same prompt"],
   ["/export", "Download this console transcript as Markdown"],
   ["/clear", "Clear the console transcript"],
   ["/stop", "Stop the current response or benchmark"]
@@ -90,6 +106,7 @@ export default function WorkbenchConsole({
   onModelChange,
   onAutoModelRoutingChange,
   onRun,
+  onRunStudioPlusArena,
   onStop,
   onClear
 }: Props) {
@@ -98,6 +115,12 @@ export default function WorkbenchConsole({
     { id: 1, kind: "system", text: "NOXEN Console initialized. Type /help to inspect available commands.", at: Date.now() }
   ]);
   const [benchmarkRunning, setBenchmarkRunning] = useState(false);
+  const [arenaOpen, setArenaOpen] = useState(false);
+  const [arenaPrompt, setArenaPrompt] = useState("");
+  const [arenaRunning, setArenaRunning] = useState(false);
+  const [arenaResults, setArenaResults] = useState<StudioPlusArenaResult | null>(null);
+  const [arenaError, setArenaError] = useState("");
+  const arenaControllerRef = useRef<AbortController | null>(null);
   const benchmarkCancelRef = useRef(false);
   const eventIdRef = useRef(2);
   const outputRef = useRef<HTMLDivElement | null>(null);
@@ -112,9 +135,18 @@ export default function WorkbenchConsole({
     const output = outputRef.current;
     if (!output) return;
     output.scrollTop = output.scrollHeight;
-  }, [messages.length, events.length, running, benchmarkRunning, activity]);
+  }, [messages.length, events.length, running, benchmarkRunning, arenaRunning, arenaResults, activity]);
+
+  useEffect(() => () => {
+    arenaControllerRef.current?.abort();
+  }, []);
 
   const clearConsole = useCallback(() => {
+    arenaControllerRef.current?.abort();
+    arenaControllerRef.current = null;
+    setArenaRunning(false);
+    setArenaResults(null);
+    setArenaError("");
     onClear();
     setEvents([]);
     appendEvent("success", "Transcript cleared. Console session is ready.");
@@ -174,6 +206,51 @@ export default function WorkbenchConsole({
       inputRef.current?.focus();
     }
   }, [appendEvent, models, onRun]);
+
+  const runStudioPlusArena = useCallback(async (prompt: string) => {
+    const text = prompt.trim();
+    setArenaOpen(true);
+    if (!text) {
+      appendEvent("warning", "ARENA USAGE · enter one prompt to send to both Studio Plus models.");
+      return;
+    }
+    setArenaPrompt(text);
+    setArenaResults(null);
+    setArenaError("");
+    if (!onRunStudioPlusArena) {
+      const message = "Arena dispatch is not connected. The host must provide onRunStudioPlusArena so both models can be called securely.";
+      setArenaError(message);
+      appendEvent("warning", message);
+      return;
+    }
+
+    const controller = new AbortController();
+    arenaControllerRef.current?.abort();
+    arenaControllerRef.current = controller;
+    setArenaRunning(true);
+    appendEvent("system", "STUDIO PLUS ARENA STARTED · same prompt · parallel execution · isolated context");
+    try {
+      const result = await onRunStudioPlusArena(text, controller.signal);
+      if (controller.signal.aborted) throw new DOMException("Request cancelled", "AbortError");
+      setArenaResults(result);
+      const passed = Number(result.original?.ok) + Number(result.v2?.ok);
+      appendEvent(
+        passed === 2 ? "success" : "warning",
+        "ARENA FINISHED · " + passed + "/2 responses received. Compare the two panels below."
+      );
+    } catch (error) {
+      const cancelled = error instanceof Error && error.name === "AbortError";
+      const detail = error instanceof Error ? error.message : "Unknown Arena error.";
+      setArenaError(cancelled ? "Comparison stopped." : detail);
+      appendEvent("warning", cancelled ? "ARENA CANCELLED." : "ARENA FAILED · " + detail);
+    } finally {
+      if (arenaControllerRef.current === controller) {
+        arenaControllerRef.current = null;
+        setArenaRunning(false);
+      }
+      inputRef.current?.focus();
+    }
+  }, [appendEvent, onRunStudioPlusArena]);
 
   const execute = useCallback(async (raw: string) => {
     const line = raw.trim();
@@ -262,8 +339,17 @@ export default function WorkbenchConsole({
         return;
       case "/stop":
         benchmarkCancelRef.current = true;
+        arenaControllerRef.current?.abort();
         onStop();
         appendEvent("warning", "Stop signal sent.");
+        return;
+      case "/arena":
+        if (!argument) {
+          setArenaOpen(true);
+          appendEvent("system", "STUDIO PLUS ARENA · enter one prompt in the Arena panel, then run both models together.");
+          return;
+        }
+        await runStudioPlusArena(argument);
         return;
       case "/bench":
         if (!argument) {
@@ -327,10 +413,10 @@ export default function WorkbenchConsole({
   }, [
     appendEvent, autoModelRouting, benchmarkRunning, clearConsole, exportTranscript,
     isOnline, messages.length, models, onAutoModelRoutingChange, onModelChange,
-    onRun, onStop, running, runModelBenchmark, selectedModel
+    onRun, onStop, running, runModelBenchmark, runStudioPlusArena, selectedModel
   ]);
 
-  const busy = running || benchmarkRunning;
+  const busy = running || benchmarkRunning || arenaRunning;
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
     void execute(input);
@@ -385,7 +471,83 @@ export default function WorkbenchConsole({
           <button type="button" onClick={() => setInput("/code ")}><Code2 size={13} /> Code</button>
           <button type="button" onClick={() => setInput("/bench ")}><Activity size={13} /> Benchmark</button>
           <button type="button" onClick={() => setInput("/models")}><Cpu size={13} /> Models</button>
+          <button type="button" className={arenaOpen ? "active" : ""} onClick={() => setArenaOpen(value => !value)}><Activity size={13} /> Studio Plus Arena</button>
         </div>
+
+        {arenaOpen && (
+          <section className="noxen-console-arena" aria-label="Studio Plus model comparison">
+            <div className="noxen-console-arena-heading">
+              <div>
+                <span className="noxen-console-arena-eyebrow">PARALLEL MODEL TEST</span>
+                <h2>Studio Plus Arena<span>.</span></h2>
+                <p>One prompt is sent to both models at the same time. Each answer is shown independently.</p>
+              </div>
+              <button type="button" className="noxen-console-arena-close" onClick={() => setArenaOpen(false)} disabled={arenaRunning}>Close</button>
+            </div>
+
+            <form className="noxen-console-arena-form" onSubmit={event => { event.preventDefault(); void runStudioPlusArena(arenaPrompt); }}>
+              <label htmlFor="noxen-studio-arena-prompt">SHARED PROMPT</label>
+              <textarea
+                id="noxen-studio-arena-prompt"
+                value={arenaPrompt}
+                onChange={event => setArenaPrompt(event.target.value)}
+                placeholder="Enter one prompt for both Studio Plus models…"
+                rows={3}
+                maxLength={12000}
+                disabled={arenaRunning}
+              />
+              <div className="noxen-console-arena-form-footer">
+                <span>{onRunStudioPlusArena ? "Both model calls use the same prompt and isolated context." : "Connect the secure Arena runner in the host app to enable model execution."}</span>
+                {arenaRunning ? (
+                  <button type="button" className="noxen-console-arena-run stop" onClick={() => {
+                    arenaControllerRef.current?.abort();
+                    onStop();
+                  }}><Square size={14} /> Stop comparison</button>
+                ) : (
+                  <button type="submit" className="noxen-console-arena-run" disabled={!arenaPrompt.trim() || !onRunStudioPlusArena}>
+                    <Play size={14} fill="currentColor" /> Run both models
+                  </button>
+                )}
+              </div>
+            </form>
+
+            {arenaError && <div className="noxen-console-arena-error" role="alert">{arenaError}</div>}
+
+            <div className="noxen-console-arena-grid" aria-live="polite">
+              <article className="noxen-console-arena-card">
+                <div className="noxen-console-arena-card-head">
+                  <div><h3>Studio Plus</h3><p>Existing NOXEN production Studio Plus route</p></div>
+                  <span className={"noxen-console-arena-state " + (arenaRunning ? "running" : arenaResults?.original?.ok ? "success" : arenaResults ? "failed" : "idle")}>
+                    {arenaRunning ? "RUNNING" : arenaResults ? (arenaResults.original?.ok ? "COMPLETE" : "FAILED") : "READY"}
+                  </span>
+                </div>
+                {arenaResults?.original?.provider && <div className="noxen-console-arena-meta">PROVIDER · {arenaResults.original.provider}</div>}
+                {arenaResults?.original?.durationMs !== undefined && <div className="noxen-console-arena-meta">TIME · {arenaResults.original.durationMs} ms</div>}
+                {arenaResults ? (
+                  arenaResults.original?.ok ? (
+                    <div className="noxen-console-markdown noxen-console-arena-answer"><ReactMarkdown remarkPlugins={[remarkGfm]}>{arenaResults.original.answer || "The model returned an empty answer."}</ReactMarkdown></div>
+                  ) : <p className="noxen-console-arena-failure">{arenaResults.original?.error || "Studio Plus did not return a response."}</p>
+                ) : <p className="noxen-console-arena-placeholder">{arenaRunning ? "Waiting for the original Studio Plus route…" : "The original Studio Plus answer will appear here."}</p>}
+              </article>
+
+              <article className="noxen-console-arena-card">
+                <div className="noxen-console-arena-card-head">
+                  <div><h3>Studio Plus V2</h3><p>Kimi K3.1 Pro</p></div>
+                  <span className={"noxen-console-arena-state " + (arenaRunning ? "running" : arenaResults?.v2?.ok ? "success" : arenaResults ? "failed" : "idle")}>
+                    {arenaRunning ? "RUNNING" : arenaResults ? (arenaResults.v2?.ok ? "COMPLETE" : "FAILED") : "READY"}
+                  </span>
+                </div>
+                {arenaResults?.v2?.provider && <div className="noxen-console-arena-meta">PROVIDER · {arenaResults.v2.provider}</div>}
+                {arenaResults?.v2?.durationMs !== undefined && <div className="noxen-console-arena-meta">TIME · {arenaResults.v2.durationMs} ms</div>}
+                {arenaResults ? (
+                  arenaResults.v2?.ok ? (
+                    <div className="noxen-console-markdown noxen-console-arena-answer"><ReactMarkdown remarkPlugins={[remarkGfm]}>{arenaResults.v2.answer || "The model returned an empty answer."}</ReactMarkdown></div>
+                  ) : <p className="noxen-console-arena-failure">{arenaResults.v2?.error || "Studio Plus V2 did not return a response."}</p>
+                ) : <p className="noxen-console-arena-placeholder">{arenaRunning ? "Waiting for Studio Plus V2 / Kimi…" : "The Studio Plus V2 answer will appear here."}</p>}
+              </article>
+            </div>
+          </section>
+        )}
 
         <div className="noxen-console-output" ref={outputRef} role="log" aria-live="polite" aria-label="Console output">
           <div className="noxen-console-welcome">
@@ -464,6 +626,7 @@ export default function WorkbenchConsole({
           {busy ? (
             <button type="button" className="noxen-console-run-button stop" onClick={() => {
               benchmarkCancelRef.current = true;
+              arenaControllerRef.current?.abort();
               onStop();
               appendEvent("warning", "Stop signal sent.");
             }} aria-label="Stop current run" title="Stop current run"><Square size={15} fill="currentColor" /></button>

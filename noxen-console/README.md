@@ -34,3 +34,21 @@ The component imports `./workbench-console.css` from the same folder.
 The app-level integration (navigation entry, isolated console transcript, and adapter to NOXEN's existing request pipeline) is maintained in the NOXEN repository, in the `feat/noxen-terminal-console` branch / PR #72. Copying these source files into this attachments repository does not deploy or activate the console on the production NOXEN website.
 
 Production NOXEN: https://noxenlabs.vercel.app/
+
+
+## Studio Plus Arena
+
+The source bundle includes an optional side-by-side Arena panel. It accepts one shared prompt and renders the original Studio Plus result beside Studio Plus V2.
+
+The consuming app can enable the panel by passing `onRunStudioPlusArena(prompt, signal)`. That callback must dispatch both requests in parallel and return:
+
+```ts
+{
+  original: { ok, model, answer?, provider?, durationMs?, error? },
+  v2: { ok, model, answer?, provider?, durationMs?, error? }
+}
+```
+
+Keep the original Studio Plus request on the existing authenticated NOXEN route/provider path (AirLLM); do not replace or reroute it. Route Studio Plus V2 to the configured Kimi K3.1 Pro provider through a server-side endpoint. Keep provider keys out of this source bundle and browser code. Each side should return its own error so one failure does not hide the other model's answer.
+
+The UI remains disabled until the consuming app supplies this secure adapter. This keeps the attachment bundle independent from production app credentials and prevents it from bypassing owner access controls.
