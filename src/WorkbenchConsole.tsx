@@ -74,6 +74,8 @@ type Props = {
 const COMMANDS = [
   ["/help", "Show the command guide and ready-to-run examples"],
   ["/status", "Inspect API route, model, session, and latency"],
+  ["/gpu status", "Check the Studio Plus AirLLM worker connection"],
+  ["/kimi status", "Check the private Kimi inference endpoint connection"],
   ["/ping", "Send a real model request and measure latency"],
   ["/models", "List model names and access"],
   ["/model <name>", "Switch model: core, nova, swift, or studio"],
@@ -327,6 +329,31 @@ export default function WorkbenchConsole({
           "LAST REQUEST: " + (lastLatencyMs === null ? "NOT RUN YET" : lastLatencyMs + " ms")
         ].join("\n"));
         return;
+      case "/gpu":
+      case "/kimi": {
+        const service = command.slice(1);
+        const action = argument.toLowerCase() || "status";
+        if (action !== "status") {
+          appendEvent("warning", "Only the status check is available here. Model generation remains on NOXEN's authenticated chat pipeline.");
+          return;
+        }
+        try {
+          const response = await fetch("/api/" + service + "/status", { cache: "no-store", signal: AbortSignal.timeout(7000) });
+          const payload: any = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.error || "Status endpoint returned HTTP " + response.status);
+          appendEvent(payload.reachable ? "success" : "warning", [
+            service.toUpperCase() + " · " + String(payload.state || "unknown").toUpperCase(),
+            "CONFIGURED: " + (payload.configured ? "YES" : "NO"),
+            "REACHABLE: " + (payload.reachable ? "YES" : "NO"),
+            payload.cudaAvailable === undefined ? "" : "CUDA: " + (payload.cudaAvailable ? "AVAILABLE" : "NOT DETECTED"),
+            payload.cudaDevice ? "GPU: " + payload.cudaDevice : "",
+            payload.message || "No additional status details."
+          ].filter(Boolean).join("\\n"));
+        } catch (error) {
+          appendEvent("warning", service.toUpperCase() + " status check failed: " + (error instanceof Error ? error.message : "Unknown error"));
+        }
+        return;
+      }
       case "/ping": {
         const result = await runPrompt("Reply with exactly PONG and one short sentence confirming which model handled this request.", { isolateHistory: true }, "ping");
         if (result.ok) appendEvent("success", "PING LATENCY · " + result.durationMs + " ms");
