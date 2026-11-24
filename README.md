@@ -19,7 +19,11 @@ A terminal-first workspace for exercising the real NOXEN services through the of
 | Attach button or `/attach` | Up to 3 compressed images and text/code files for analysis |
 | `/ping`, `/status`, `/help`, `/export`, `/clear`, `/stop` | Diagnostics and session controls |
 
-## Free GPU inference lab\n\nThe workstation includes an experimental AirLLM test panel for a DeepSeek-based Studio Plus worker and a separate Kimi worker. It uses authenticated server-side proxy routes; worker API keys are never sent to browser code. Setup, Vercel environment variables, worker deployment notes, and model-size limitations are documented in [`docs/FREE_GPU_AIRLLM_KIMI.md`](docs/FREE_GPU_AIRLLM_KIMI.md). This isolated lab does not unlock Studio Plus on the production NOXEN site or bypass its verified-owner access check.\n\n## Model access
+## Free GPU inference lab
+
+The workstation includes an experimental AirLLM test panel for a DeepSeek-based Studio Plus worker and a separate Kimi worker. It uses authenticated server-side proxy routes; worker API keys are never sent to browser code. Setup, Vercel environment variables, worker deployment notes, and model-size limitations are documented in [`docs/FREE_GPU_AIRLLM_KIMI.md`](docs/FREE_GPU_AIRLLM_KIMI.md). This isolated lab does not unlock Studio Plus on the production NOXEN site or bypass its verified-owner access check.
+
+## Model access
 
 Core, Nova, Swift, and Studio use the existing production chat endpoint. Studio Plus remains locked because its endpoint requires a verified owner session. The standalone playground does not bypass that rule.
 
