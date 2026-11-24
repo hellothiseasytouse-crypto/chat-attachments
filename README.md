@@ -18,10 +18,12 @@ A terminal-first workspace for exercising the real NOXEN services through the of
 | `/images <query>` | Existing web image lookup |
 | Attach button or `/attach` | Up to 3 compressed images and text/code files for analysis |
 | `/ping`, `/status`, `/help`, `/export`, `/clear`, `/stop` | Diagnostics and session controls |
+| `/gpu status` | Check the Studio Plus AirLLM worker without exposing its URL or key |
+| `/kimi status` | Check whether a private Kimi-compatible endpoint is configured and reachable |
 
 ## Model access
 
-Core, Nova, Swift, and Studio use the existing production chat endpoint. Studio Plus remains locked because its endpoint requires a verified owner session. The standalone playground does not bypass that rule.
+Core, Nova, Swift, and Studio use the existing production chat endpoint. Studio Plus remains locked because its endpoint requires a verified owner session. The standalone playground does not bypass that rule. GPU status checks are diagnostic only; they do not bypass owner authentication or claim that a model is loaded. Kimi K2.5 is a 1T-parameter open-weight MoE model, not a realistic fit for ordinary free notebook GPUs; its status endpoint remains unavailable until a suitable private inference host is configured.
 
 ## Isolation and security
 
@@ -35,4 +37,4 @@ Core, Nova, Swift, and Studio use the existing production chat endpoint. Studio 
 ## Hosting
 
 Standalone Vite + React project deployed as `noxen-console-lab`.
-Only the explicit routes in `vercel.json` are proxied to `https://noxenlabs.vercel.app`.
+Only the explicit routes in `vercel.json` are proxied to `https://noxenlabs.vercel.app`. The Console project also serves sanitized `/api/gpu/status` and `/api/kimi/status` checks using server-only environment variables. See `noxen-console/FREE_GPU_INFERENCE.md` before connecting any temporary notebook runtime.

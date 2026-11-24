@@ -74,6 +74,8 @@ type Props = {
 const COMMANDS = [
   ["/help", "Show the command guide and ready-to-run examples"],
   ["/status", "Inspect API route, model, session, and latency"],
+  ["/gpu status", "Check the Studio Plus AirLLM worker connection"],
+  ["/kimi status", "Check the private Kimi inference endpoint connection"],
   ["/ping", "Send a real model request and measure latency"],
   ["/models", "List model names and access"],
   ["/model <name>", "Switch model: core, nova, swift, or studio"],
@@ -312,6 +314,7 @@ export default function WorkbenchConsole({
           "MODEL CONTROL\n" + COMMANDS.filter(([name]) => ["/models", "/model <name>", "/auto on|off", "/ping", "/bench <prompt>"].includes(name)).map(([name, description]) => name.padEnd(24) + " " + description).join("\n") +
           "\n\nAI MODES\n" + COMMANDS.filter(([name]) => ["/research <prompt>", "/code <prompt>", "/write <prompt>", "/study <prompt>", "/data <prompt>", "/ideas <prompt>"].includes(name)).map(([name, description]) => name.padEnd(24) + " " + description).join("\n") +
           "\n\nNOXEN TOOLS\n" + COMMANDS.filter(([name]) => ["/youtube <query>", "/inspect <url>", "/reverse <url>", "/image <prompt>", "/images <query>", "/attach"].includes(name)).map(([name, description]) => name.padEnd(24) + " " + description).join("\n") +
+          "\n\nGPU SERVICES\n" + COMMANDS.filter(([name]) => ["/gpu status", "/kimi status"].includes(name)).map(([name, description]) => name.padEnd(24) + " " + description).join("\n") +
           "\n\nSESSION\n" + COMMANDS.filter(([name]) => ["/status", "/export", "/clear", "/stop"].includes(name)).map(([name, description]) => name.padEnd(24) + " " + description).join("\n") +
           "\n\nEXAMPLES\n  /model studio\n  /bench Explain recursion with an example\n  /research latest TypeScript release notes\n  /youtube how transformers work animation\n  /inspect https://example.com\n  /image a little robot in a greenhouse at sunrise\n  Attach a PNG/JPEG/WebP/GIF or text/code file, then ask NOXEN to analyse it.\n\nThis console runs NOXEN app actions, not arbitrary operating-system shell commands.");
         return;
@@ -327,6 +330,31 @@ export default function WorkbenchConsole({
           "LAST REQUEST: " + (lastLatencyMs === null ? "NOT RUN YET" : lastLatencyMs + " ms")
         ].join("\n"));
         return;
+      case "/gpu":
+      case "/kimi": {
+        const service = command.slice(1);
+        const action = argument.toLowerCase() || "status";
+        if (action !== "status") {
+          appendEvent("warning", "Only the status check is available here. Model generation remains on NOXEN's authenticated chat pipeline.");
+          return;
+        }
+        try {
+          const response = await fetch("/api/" + service + "/status", { cache: "no-store", signal: AbortSignal.timeout(7000) });
+          const payload: any = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.error || "Status endpoint returned HTTP " + response.status);
+          appendEvent(payload.reachable ? "success" : "warning", [
+            service.toUpperCase() + " · " + String(payload.state || "unknown").toUpperCase(),
+            "CONFIGURED: " + (payload.configured ? "YES" : "NO"),
+            "REACHABLE: " + (payload.reachable ? "YES" : "NO"),
+            payload.cudaAvailable === undefined ? "" : "CUDA: " + (payload.cudaAvailable ? "AVAILABLE" : "NOT DETECTED"),
+            payload.cudaDevice ? "GPU: " + payload.cudaDevice : "",
+            payload.message || "No additional status details."
+          ].filter(Boolean).join("\n"));
+        } catch (error) {
+          appendEvent("warning", service.toUpperCase() + " status check failed: " + (error instanceof Error ? error.message : "Unknown error"));
+        }
+        return;
+      }
       case "/ping": {
         const result = await runPrompt("Reply with exactly PONG and one short sentence confirming which model handled this request.", { isolateHistory: true }, "ping");
         if (result.ok) appendEvent("success", "PING LATENCY · " + result.durationMs + " ms");
