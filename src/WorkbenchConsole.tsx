@@ -296,7 +296,7 @@ export default function WorkbenchConsole({
       return;
     }
     if (!onRunStudioPlusArena) {
-      const message = "Sign in with the verified NOXEN owner account above to enable the Arena.";
+      const message = "Live Studio Plus comparison is unavailable in this preview.";
       setArenaError(message);
       appendEvent("warning", message);
       return;
@@ -585,7 +585,7 @@ export default function WorkbenchConsole({
                 placeholder="Enter one prompt for both Studio Plus models…" rows={3}
                 maxLength={12000} disabled={arenaRunning} />
               <div className="noxen-console-arena-form-footer">
-                <span>{onRunStudioPlusArena ? "Same prompt, parallel calls. Kimi V2 may use OpenRouter credits (1,800-token output cap)." : "Sign in with the verified NOXEN owner account above to enable live model calls."}</span>
+                <span>{onRunStudioPlusArena ? "Same prompt, parallel calls. Kimi V2 may use OpenRouter credits (1,800-token output cap)." : "Live Studio Plus comparison is unavailable in this preview."}</span>
                 {arenaRunning ? (
                   <button type="button" className="noxen-console-arena-run stop" onClick={() => {
                     arenaControllerRef.current?.abort();
