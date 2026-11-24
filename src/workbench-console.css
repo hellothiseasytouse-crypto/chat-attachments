@@ -430,3 +430,41 @@
   .noxen-console-attachment { max-width: 100%; }
   .noxen-console-clear-files { margin-left: 0; }
 }
+
+
+/* Studio Plus Arena panel */
+.noxen-console-quickbar button.active { border-color:#6a9c78; color:#c0edca; background:#172a1d; }
+.noxen-console-arena { margin:12px; padding:16px; border:1px solid #35523d; border-radius:11px; background:linear-gradient(145deg,rgba(25,44,30,.92),rgba(10,17,13,.98)); }
+.noxen-console-arena-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.noxen-console-arena-eyebrow { color:#8fb99b; font-size:9px; font-weight:800; letter-spacing:.16em; }
+.noxen-console-arena-heading h2 { margin:5px 0 3px; color:#d7e9dc; font-size:18px; letter-spacing:-.035em; }
+.noxen-console-arena-heading h2 span { color:#91d6a3; }
+.noxen-console-arena-heading p { margin:0; color:#81988a; font-size:10px; line-height:1.55; }
+.noxen-console-arena-close { padding:6px 9px; border:1px solid #354b3b; border-radius:6px; color:#9fb4a5; background:#101a13; font:10px ui-monospace,monospace; cursor:pointer; }
+.noxen-console-arena-close:disabled { opacity:.45; cursor:not-allowed; }
+.noxen-console-arena-form { display:grid; gap:8px; padding:12px; border:1px solid #2a4031; border-radius:8px; background:rgba(7,13,9,.58); }
+.noxen-console-arena-form>label { color:#8ca996; font-size:9px; font-weight:800; letter-spacing:.12em; }
+.noxen-console-arena-form textarea { width:100%; min-height:72px; max-height:190px; resize:vertical; padding:10px; border:1px solid #304a37; border-radius:7px; outline:0; background:#0c150f; color:#dce9df; font:11px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace; }
+.noxen-console-arena-form textarea:focus { border-color:#6eaa7d; }
+.noxen-console-arena-form textarea::placeholder { color:#66796b; }
+.noxen-console-arena-form-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.noxen-console-arena-form-footer>span { color:#789080; font-size:9px; line-height:1.5; }
+.noxen-console-arena-run { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:34px; padding:0 11px; border:1px solid #497657; border-radius:7px; background:#1c3a25; color:#bcebc7; font:700 10px ui-monospace,monospace; cursor:pointer; }
+.noxen-console-arena-run:disabled { opacity:.4; cursor:not-allowed; }
+.noxen-console-arena-run.stop { border-color:#825044; background:#39251f; color:#edb5a0; }
+.noxen-console-arena-error { margin-top:10px; padding:9px 11px; border:1px solid #70483d; border-radius:7px; background:rgba(62,32,26,.42); color:#e9b5a4; font-size:10px; line-height:1.55; }
+.noxen-console-arena-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px; }
+.noxen-console-arena-card { min-width:0; padding:12px; border:1px solid #2c4333; border-radius:8px; background:rgba(12,20,15,.82); }
+.noxen-console-arena-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; padding-bottom:9px; border-bottom:1px solid #263a2c; }
+.noxen-console-arena-card-head h3 { margin:0; color:#cce4d2; font-size:12px; }
+.noxen-console-arena-card-head p { margin:4px 0 0; color:#799083; font-size:9px; }
+.noxen-console-arena-state { flex:0 0 auto; padding:4px 6px; border:1px solid #354b3b; border-radius:4px; color:#91a797; background:#111b14; font-size:8px; font-weight:800; letter-spacing:.08em; }
+.noxen-console-arena-state.running { color:#e2c58c; border-color:#66563a; }
+.noxen-console-arena-state.success { color:#a5e5b5; border-color:#3d6548; }
+.noxen-console-arena-state.failed { color:#e7a899; border-color:#70483d; }
+.noxen-console-arena-meta { margin-top:7px; color:#799483; font-size:8px; letter-spacing:.08em; overflow-wrap:anywhere; }
+.noxen-console-arena-answer { margin-top:10px; max-height:560px; overflow:auto; padding-right:3px; }
+.noxen-console-arena-answer>:first-child { margin-top:0; }
+.noxen-console-arena-placeholder,.noxen-console-arena-failure { margin:13px 0 2px; color:#7f9687; font-size:10px; line-height:1.65; white-space:pre-wrap; overflow-wrap:anywhere; }
+.noxen-console-arena-failure { color:#e1aa9a; }
+@media (max-width:760px) { .noxen-console-arena { margin:8px; padding:11px; } .noxen-console-arena-grid { grid-template-columns:1fr; } .noxen-console-arena-form { padding:9px; } .noxen-console-arena-card { padding:10px; } }
