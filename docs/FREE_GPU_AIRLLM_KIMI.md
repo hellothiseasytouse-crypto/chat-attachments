@@ -42,7 +42,7 @@ Set the access token and worker API keys to different long random values. Do not
 
 ## Worker deployment contract
 
-The repository includes `gpu-worker/server.py`, a small FastAPI service that wraps AirLLM and exposes:
+The repository includes `gpu-worker/server.py`, a small FastAPI service that wraps AirLLM and exposes. It defaults to a small DeepSeek distillation checkpoint for a smoke test; set `MODEL_ID=moonshotai/Kimi-K3` only on a suitably provisioned Kimi worker:
 
 - `GET /health` — authenticated worker status
 - `POST /v1/chat/completions` — authenticated, non-streaming OpenAI-compatible completion
