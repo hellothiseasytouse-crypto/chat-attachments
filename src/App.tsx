@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Activity, AlertTriangle, Cpu, FlaskConical, ShieldCheck, Wifi } from "lucide-react";
 import WorkbenchConsole, { type ConsoleAttachment, type ConsoleRunOptions, type ConsoleRunResult } from "./WorkbenchConsole";
+import { supabase } from "./supabase";
 
 type Message = {
   role: "user" | "assistant";
@@ -15,7 +16,7 @@ const MODELS = [
   { name: "NOXEN Core 1.5", label: "Nova", description: "Balanced reasoning, coding, and everyday assistance · live production inference" },
   { name: "NOXEN Swift", label: "Swift", description: "Fast responses and image understanding · live production inference" },
   { name: "NOXEN Studio", label: "Studio", description: "Advanced analysis, coding, and creative work · live production inference" },
-  { name: "NOXEN Studio Plus", label: "Studio Plus", description: "AirLLM/advanced route · requires verified NOXEN owner sign-in", locked: true }
+  { name: "NOXEN Studio Plus", label: "Studio Plus", description: "Existing NOXEN production Studio Plus route · verified owner access", locked: true }
 ];
 
 function chooseModel(prompt: string): string {
@@ -42,12 +43,13 @@ async function postJson(
   url: string,
   body: unknown,
   signal: AbortSignal,
-  timeoutMs = 60000
+  timeoutMs = 60000,
+  extraHeaders: Record<string, string> = {}
 ): Promise<any> {
   const response = await fetch(url, {
     method: "POST",
     cache: "no-store",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...extraHeaders },
     body: JSON.stringify(body),
     signal: AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)])
   });
@@ -126,6 +128,14 @@ export default function App() {
   const [apiReachable, setApiReachable] = useState<boolean | null>(null);
   const [lastLatencyMs, setLastLatencyMs] = useState<number | null>(null);
   const [requestCount, setRequestCount] = useState(0);
+  const [authReady, setAuthReady] = useState(false);
+  const [authSession, setAuthSession] = useState<any>(null);
+  const [ownerVerified, setOwnerVerified] = useState(false);
+  const [ownerChecking, setOwnerChecking] = useState(false);
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authError, setAuthError] = useState("");
   const activeController = useRef<AbortController | null>(null);
   const objectUrls = useRef<string[]>([]);
 
@@ -147,6 +157,98 @@ export default function App() {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    if (!supabase) {
+      setAuthReady(true);
+      setAuthError("Owner sign-in is not configured in this preview.");
+      return;
+    }
+    let active = true;
+    void supabase.auth.getSession().then(({ data, error }) => {
+      if (!active) return;
+      setAuthSession(data.session);
+      if (error) setAuthError(error.message);
+      setAuthReady(true);
+    }).catch(() => {
+      if (active) {
+        setAuthReady(true);
+        setAuthError("Could not restore the NOXEN sign-in session.");
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      setAuthSession(session);
+      setAuthError("");
+    });
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const token = authSession?.access_token;
+    if (!token) {
+      setOwnerVerified(false);
+      setOwnerChecking(false);
+      return;
+    }
+    setOwnerVerified(false);
+    setOwnerChecking(true);
+    void fetch("/api/studio-plus-v2", {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      },
+      body: JSON.stringify({ mode: "verify" })
+    }).then(async response => {
+      const payload = parseResponse(await response.text(), response.status);
+      if (!response.ok) throw new Error(payload.error || "Owner verification failed.");
+      return payload;
+    }).then(payload => {
+      if (active) {
+        setOwnerVerified(payload.ownerVerified === true);
+        if (payload.ownerVerified !== true) setAuthError("This account is not authorized for Studio Plus.");
+      }
+    }).catch(error => {
+      if (active) {
+        setOwnerVerified(false);
+        setAuthError(error instanceof Error ? error.message : "Could not verify Studio Plus access.");
+      }
+    }).finally(() => {
+      if (active) setOwnerChecking(false);
+    });
+    return () => { active = false; };
+  }, [authSession?.access_token]);
+
+  const signInToConsole = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!supabase) {
+      setAuthError("Owner sign-in is not configured in this preview.");
+      return;
+    }
+    setAuthBusy(true);
+    setAuthError("");
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: authEmail.trim(),
+      password: authPassword
+    });
+    setAuthPassword("");
+    if (error) setAuthError(error.message);
+    else if (data.session) setAuthSession(data.session);
+    setAuthBusy(false);
+  }, [authEmail, authPassword]);
+
+  const signOutFromConsole = useCallback(async () => {
+    if (supabase) await supabase.auth.signOut();
+    setAuthSession(null);
+    setOwnerVerified(false);
+    setAuthError("");
+  }, []);
+
   useEffect(() => () => {
     objectUrls.current.forEach(url => URL.revokeObjectURL(url));
     objectUrls.current = [];
@@ -161,8 +263,8 @@ export default function App() {
     const model = options?.modelOverride || (autoModelRouting ? chooseModel(text) : selectedModel);
     const shownPrompt = text || "Analyze the attached file(s).";
     const startedAt = performance.now();
-    if (model === "NOXEN Studio Plus") {
-      const error = "Studio Plus requires a verified, signed-in owner session. This isolated test lab does not bypass NOXEN account access controls.";
+    if (model === "NOXEN Studio Plus" && (!authSession?.access_token || !ownerVerified)) {
+      const error = "Sign in with the verified NOXEN owner account in the Studio Plus access panel to run this model.";
       setMessages(previous => [...previous, { role: "user", text: shownPrompt, model, files: attachments.map(item => ({ name: item.name, type: item.type })) }, { role: "assistant", text: error, model: "ACCESS CONTROL" }]);
       return { ok: false, model, durationMs: 0, words: 0, error };
     }
@@ -294,7 +396,7 @@ export default function App() {
         studioProvider: "huggingface",
         preferences: { playfulBanter: false },
         agentMode: true
-      }, controller.signal, 90000);
+      }, controller.signal, 90000, model === "NOXEN Studio Plus" ? { Authorization: "Bearer " + authSession.access_token } : {});
 
       if (typeof payload.answer !== "string" || !payload.answer.trim()) throw new Error("NOXEN's chat API returned no answer.");
       const actualModel = String(payload.noxenModel || payload.model || model);
@@ -317,7 +419,91 @@ export default function App() {
         setActivity(null);
       }
     }
-  }, [autoModelRouting, messages, selectedModel]);
+  }, [autoModelRouting, authSession, messages, ownerVerified, selectedModel]);
+
+  const runStudioPlusArena = useCallback(async (prompt: string, signal: AbortSignal) => {
+    if (!ownerVerified || !supabase) throw new Error("Sign in with the verified NOXEN owner account to unlock the Arena.");
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token || authSession?.access_token;
+    if (!token) throw new Error("Your NOXEN sign-in session expired. Sign in again.");
+
+    const originalCall = async () => {
+      const startedAt = performance.now();
+      try {
+        const payload = await postJson("/api/chat", {
+          message: prompt,
+          history: [],
+          requestModel: "NOXEN Studio Plus",
+          selectedModel: "NOXEN Studio Plus",
+          attachments: [],
+          search: false,
+          searchResults: [],
+          responseStylePreference: "direct-concise",
+          profileHandle: "console-user",
+          profileName: "NOXEN Console User",
+          profileBio: "",
+          context: "",
+          feedbackMemory: "",
+          studioProvider: "huggingface",
+          preferences: { playfulBanter: false },
+          agentMode: true
+        }, signal, 90000, { Authorization: "Bearer " + token });
+        const answer = typeof payload.answer === "string" ? payload.answer.trim() : "";
+        if (!answer) throw new Error("The original Studio Plus route returned no answer.");
+        return {
+          ok: true,
+          model: String(payload.noxenModel || "NOXEN Studio Plus"),
+          answer,
+          provider: String(payload.responseProvider || "Original NOXEN production route"),
+          durationMs: Math.round(performance.now() - startedAt)
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          model: "NOXEN Studio Plus",
+          durationMs: Math.round(performance.now() - startedAt),
+          error: error instanceof Error ? error.message : "Original Studio Plus request failed."
+        };
+      }
+    };
+
+    const v2Call = async () => {
+      const startedAt = performance.now();
+      try {
+        const response = await fetch("/api/studio-plus-v2", {
+          method: "POST",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token
+          },
+          body: JSON.stringify({ prompt }),
+          signal: AbortSignal.any([signal, AbortSignal.timeout(95000)])
+        });
+        const payload = parseResponse(await response.text(), response.status);
+        if (!response.ok) throw new Error(payload.error || "Studio Plus V2 request failed.");
+        const answer = typeof payload.answer === "string" ? payload.answer.trim() : "";
+        if (!answer) throw new Error("Kimi returned no answer.");
+        return {
+          ok: true,
+          model: String(payload.model || "Studio Plus V2 · Kimi K3.1 Pro"),
+          answer,
+          provider: String(payload.provider || "OpenRouter"),
+          durationMs: Math.round(performance.now() - startedAt)
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          model: "Studio Plus V2 · Kimi K3.1 Pro",
+          durationMs: Math.round(performance.now() - startedAt),
+          error: error instanceof Error ? error.message : "Studio Plus V2 request failed."
+        };
+      }
+    };
+
+    const [original, v2] = await Promise.all([originalCall(), v2Call()]);
+    return { original, v2 };
+  }, [authSession, ownerVerified]);
 
   const stop = useCallback(() => {
     activeController.current?.abort();
@@ -370,14 +556,42 @@ export default function App() {
         </div>
       </section>
 
+      <section className="owner-access" aria-label="Studio Plus owner access">
+        <div className="owner-access-copy">
+          <span className="owner-access-kicker">STUDIO PLUS ACCESS</span>
+          <strong className={ownerVerified ? "owner-access-status verified" : "owner-access-status"}>
+            {ownerChecking ? "VERIFYING OWNER SESSION" : ownerVerified ? "OWNER VERIFIED" : authSession ? "ACCOUNT NOT AUTHORIZED" : authReady ? "SIGN IN REQUIRED" : "CHECKING SESSION"}
+          </strong>
+          <p>{ownerVerified
+            ? "The NOXEN server verified this account. Studio Plus and the Arena are unlocked for this session."
+            : "Sign in with the verified NOXEN owner account to test the original Studio Plus route and Studio Plus V2."}</p>
+        </div>
+        {authSession ? (
+          <div className="owner-access-session">
+            <span>{String(authSession.user?.email || "Signed-in account")}</span>
+            <button type="button" onClick={() => void signOutFromConsole()}>Sign out</button>
+          </div>
+        ) : (
+          <form className="owner-access-form" onSubmit={signInToConsole}>
+            <input type="email" value={authEmail} onChange={event => setAuthEmail(event.target.value)}
+              placeholder="NOXEN account email" autoComplete="username" required disabled={!authReady || authBusy} />
+            <input type="password" value={authPassword} onChange={event => setAuthPassword(event.target.value)}
+              placeholder="Password" autoComplete="current-password" required disabled={!authReady || authBusy} />
+            <button type="submit" disabled={!authReady || authBusy || !supabase}>{authBusy ? "Signing in…" : "Sign in"}</button>
+          </form>
+        )}
+        {authError && <p className="owner-access-error" role="alert">{authError}</p>}
+        <p className="owner-access-footnote">Sign-in is handled by NOXEN Supabase Auth. Kimi V2 tests may consume OpenRouter credits; each response is capped at 1,800 tokens.</p>
+      </section>
+
       <div className="backend-meta">
-        <span><Cpu size={13} /> CORE · NOVA · SWIFT · STUDIO</span>
+        <span><Cpu size={13} /> CORE · NOVA · SWIFT · STUDIO{ownerVerified ? " · STUDIO PLUS" : ""}</span>
         <span><AlertTriangle size={13} /> APP COMMANDS ONLY · NO OS SHELL</span>
       </div>
 
       <WorkbenchConsole
         messages={messages}
-        models={MODELS}
+        models={MODELS.map(model => model.name === "NOXEN Studio Plus" ? { ...model, locked: !ownerVerified } : model)}
         selectedModel={selectedModel}
         autoModelRouting={autoModelRouting}
         isOnline={isOnline}
@@ -388,6 +602,7 @@ export default function App() {
         onModelChange={setSelectedModel}
         onAutoModelRoutingChange={setAutoModelRouting}
         onRun={run}
+        onRunStudioPlusArena={ownerVerified ? runStudioPlusArena : undefined}
         onStop={stop}
         onClear={clear}
       />
