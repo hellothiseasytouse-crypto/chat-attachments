@@ -52,6 +52,8 @@ type Props = {
 const COMMANDS = [
   ["/help", "Show available console commands"],
   ["/status", "Show connection, routing, and session status"],
+  ["/gpu status", "Check the Studio Plus AirLLM worker connection"],
+  ["/kimi status", "Check the private Kimi inference endpoint connection"],
   ["/models", "List model options and access"],
   ["/model <name>", "Select Core, Nova, Swift, Studio, or Studio Plus"],
   ["/auto on|off", "Toggle automatic model routing"],
@@ -207,6 +209,31 @@ export default function WorkbenchConsole({
           "BENCHMARK: " + (benchmarkRunning ? "ACTIVE" : "IDLE")
         ].join("\n"));
         return;
+      case "/gpu":
+      case "/kimi": {
+        const service = command.slice(1);
+        const action = argument.toLowerCase() || "status";
+        if (action !== "status") {
+          appendEvent("warning", "Only the status check is available here. Model generation remains on NOXEN's authenticated chat pipeline.");
+          return;
+        }
+        try {
+          const response = await fetch("/api/" + service + "/status", { cache: "no-store", signal: AbortSignal.timeout(7000) });
+          const payload: any = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.error || "Status endpoint returned HTTP " + response.status);
+          appendEvent(payload.reachable ? "success" : "warning", [
+            service.toUpperCase() + " · " + String(payload.state || "unknown").toUpperCase(),
+            "CONFIGURED: " + (payload.configured ? "YES" : "NO"),
+            "REACHABLE: " + (payload.reachable ? "YES" : "NO"),
+            payload.cudaAvailable === undefined ? "" : "CUDA: " + (payload.cudaAvailable ? "AVAILABLE" : "NOT DETECTED"),
+            payload.cudaDevice ? "GPU: " + payload.cudaDevice : "",
+            payload.message || "No additional status details."
+          ].filter(Boolean).join("\\n"));
+        } catch (error) {
+          appendEvent("warning", service.toUpperCase() + " status check failed: " + (error instanceof Error ? error.message : "Unknown error"));
+        }
+        return;
+      }
       case "/models":
         appendEvent("system", "MODEL REGISTRY\n" + models.map(model =>
           (model.locked ? "[LOCKED] " : "[READY]  ") + model.label + " · " + model.name + "\n          " + model.description
