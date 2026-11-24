@@ -19,28 +19,40 @@ function isSameOrigin(req: any): boolean {
   }
 }
 
-async function verifyOwner(req: any): Promise<{ ok: true; user: any } | { ok: false; status: number; error: string }> {
+async function verifyOwner(req: any): Promise<{ ok: true } | { ok: false; status: number; error: string }> {
   const authorization = String(req.headers?.authorization || req.headers?.Authorization || "");
   const accessToken = authorization.toLowerCase().startsWith("bearer ") ? authorization.slice(7).trim() : "";
-  const supabaseUrl = (process.env.NOXEN_SUPABASE_URL || "").replace(/\/$/, "");
-  const publishableKey = process.env.NOXEN_SUPABASE_PUBLISHABLE_KEY || "";
-  const ownerId = process.env.NOXEN_STUDIO_PLUS_OWNER_ID || "";
-  if (!accessToken || !supabaseUrl || !publishableKey || !ownerId) {
-    return { ok: false, status: 401, error: "Sign in with the verified NOXEN owner account to use Studio Plus." };
-  }
+  if (!accessToken) return { ok: false, status: 401, error: "Sign in with the verified NOXEN owner account to use Studio Plus." };
+
+  // The production chat API is the source of truth for Studio Plus access.
+  // Its owner gate runs before empty-message validation, so this preflight
+  // verifies the bearer session without starting an inference request.
   try {
-    const response = await fetch(supabaseUrl + "/auth/v1/user", {
-      headers: { apikey: publishableKey, Authorization: "Bearer " + accessToken },
-      signal: AbortSignal.timeout(8000)
+    const response = await fetch("https://noxenlabs.vercel.app/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + accessToken },
+      body: JSON.stringify({
+        message: "",
+        selectedModel: "NOXEN Studio Plus",
+        requestModel: "NOXEN Studio Plus",
+        attachments: []
+      }),
+      signal: AbortSignal.timeout(10000)
     });
-    if (!response.ok) return { ok: false, status: 401, error: "Your NOXEN sign-in session could not be verified. Sign in again." };
-    const user: any = await response.json();
-    if (user?.id !== ownerId || !user?.email_confirmed_at) {
-      return { ok: false, status: 403, error: "This account is not authorized for NOXEN Studio Plus." };
+    const payload: any = await response.json().catch(() => ({}));
+    if (response.status === 400 && payload?.error === "Message cannot be empty.") {
+      return { ok: true };
     }
-    return { ok: true, user };
+    if (response.status === 401 || response.status === 403) {
+      return { ok: false, status: response.status, error: String(payload?.error || "This account is not authorized for NOXEN Studio Plus.") };
+    }
+    return {
+      ok: false,
+      status: response.status >= 500 ? 503 : 403,
+      error: String(payload?.error || "NOXEN could not confirm Studio Plus owner access. Please try again.")
+    };
   } catch {
-    return { ok: false, status: 503, error: "NOXEN account verification is temporarily unavailable. Please retry." };
+    return { ok: false, status: 503, error: "NOXEN owner verification is temporarily unavailable. Please retry." };
   }
 }
 
