@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./gpu-inference.css";
 import { Activity, Cpu, KeyRound, Play, RefreshCw, Server, ShieldCheck, Zap } from "lucide-react";
 
 type Provider = "studio-plus" | "kimi-k3";
