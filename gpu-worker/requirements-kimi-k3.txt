@@ -1,0 +1,11 @@
+# Kimi K3's custom model code currently expects a Transformers 4.56.x line.
+# Match the PyTorch/CUDA build to the GPU image before installing flash-attn.
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+torch
+transformers==4.56.2
+airllm>=3.0.0
+compressed-tensors
+tiktoken
+# Install a CUDA-compatible flash-attn wheel/build for the chosen host.
+flash-attn

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Activity, AlertTriangle, Cpu, FlaskConical, ShieldCheck, Wifi } from "lucide-react";
 import WorkbenchConsole, { type ConsoleAttachment, type ConsoleRunOptions, type ConsoleRunResult } from "./WorkbenchConsole";
+import GpuInferencePanel from "./GpuInferencePanel";
 
 type Message = {
   role: "user" | "assistant";
@@ -374,6 +375,8 @@ export default function App() {
         <span><Cpu size={13} /> CORE · NOVA · SWIFT · STUDIO</span>
         <span><AlertTriangle size={13} /> APP COMMANDS ONLY · NO OS SHELL</span>
       </div>
+
+      <GpuInferencePanel />
 
       <WorkbenchConsole
         messages={messages}
