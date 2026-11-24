@@ -296,7 +296,7 @@ export default function WorkbenchConsole({
       return;
     }
     if (!onRunStudioPlusArena) {
-      const message = "Preview mode only: the Arena UI is present, but live Studio Plus owner authentication and the server-side Kimi route are not connected yet.";
+      const message = "Sign in with the verified NOXEN owner account above to enable the Arena.";
       setArenaError(message);
       appendEvent("warning", message);
       return;
@@ -585,7 +585,7 @@ export default function WorkbenchConsole({
                 placeholder="Enter one prompt for both Studio Plus models…" rows={3}
                 maxLength={12000} disabled={arenaRunning} />
               <div className="noxen-console-arena-form-footer">
-                <span>{onRunStudioPlusArena ? "Both models receive the same prompt in parallel." : "Preview mode: live model dispatch is not connected."}</span>
+                <span>{onRunStudioPlusArena ? "Same prompt, parallel calls. Kimi V2 may use OpenRouter credits (1,800-token output cap)." : "Sign in with the verified NOXEN owner account above to enable live model calls."}</span>
                 {arenaRunning ? (
                   <button type="button" className="noxen-console-arena-run stop" onClick={() => {
                     arenaControllerRef.current?.abort();
@@ -602,7 +602,7 @@ export default function WorkbenchConsole({
             <div className="noxen-console-arena-grid" aria-live="polite">
               <article className="noxen-console-arena-card">
                 <div className="noxen-console-arena-card-head">
-                  <div><h3>Studio Plus</h3><p>Existing NOXEN route · AirLLM</p></div>
+                  <div><h3>Studio Plus</h3><p>Existing NOXEN production Studio Plus route</p></div>
                   <span className={"noxen-console-arena-state " + (arenaRunning ? "running" : arenaResults?.original?.ok ? "success" : arenaResults ? "failed" : "idle")}>
                     {arenaRunning ? "RUNNING" : arenaResults ? (arenaResults.original.ok ? "COMPLETE" : "FAILED") : "READY"}
                   </span>
