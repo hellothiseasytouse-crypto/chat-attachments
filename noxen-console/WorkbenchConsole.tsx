@@ -516,7 +516,7 @@ export default function WorkbenchConsole({
             <div className="noxen-console-arena-grid" aria-live="polite">
               <article className="noxen-console-arena-card">
                 <div className="noxen-console-arena-card-head">
-                  <div><h3>Studio Plus</h3><p>Existing NOXEN route · AirLLM</p></div>
+                  <div><h3>Studio Plus</h3><p>Existing NOXEN production Studio Plus route</p></div>
                   <span className={"noxen-console-arena-state " + (arenaRunning ? "running" : arenaResults?.original?.ok ? "success" : arenaResults ? "failed" : "idle")}>
                     {arenaRunning ? "RUNNING" : arenaResults ? (arenaResults.original?.ok ? "COMPLETE" : "FAILED") : "READY"}
                   </span>
