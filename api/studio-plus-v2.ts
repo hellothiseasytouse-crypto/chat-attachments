@@ -62,7 +62,7 @@ export default async function handler(req: any, res: any) {
   if (!isSameOrigin(req)) return json(res, 403, { error: "This endpoint only accepts requests from the NOXEN Console preview." });
 
   const verification = await verifyOwner(req);
-  if (!verification.ok) return json(res, verification.status, { error: verification.error });
+  if (verification.ok === false) return json(res, verification.status, { error: verification.error });
   if (req.body?.mode === "verify") {
     return json(res, 200, { ownerVerified: true, model: "NOXEN Studio Plus" });
   }
