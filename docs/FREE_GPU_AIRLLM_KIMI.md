@@ -47,7 +47,7 @@ The repository includes `gpu-worker/server.py`, a small FastAPI service that wra
 - `GET /health` — authenticated worker status
 - `POST /v1/chat/completions` — authenticated, non-streaming OpenAI-compatible completion
 
-Install the packages in `gpu-worker/requirements.txt`, set `WORKER_API_KEY`, `MODEL_ID`, and the resource limits from `.env.example`, then start:
+Install `gpu-worker/requirements.txt` for the DeepSeek smoke-test worker. For Kimi K3, use the separate `gpu-worker/requirements-kimi-k3.txt` profile and match its PyTorch/CUDA/FlashAttention build to the host. Set `WORKER_API_KEY`, `MODEL_ID`, and the resource limits from `gpu-worker/.env.example`, then start:
 
 ```bash
 uvicorn server:app --host 0.0.0.0 --port 8000
