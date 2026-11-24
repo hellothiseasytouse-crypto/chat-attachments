@@ -43,6 +43,7 @@ def load_model():
         MODEL_ID,
         compression=os.getenv("AIRLLM_COMPRESSION") or None,
         delete_original=os.getenv("AIRLLM_DELETE_ORIGINAL", "false").lower() == "true",
+        trust_remote_code=True,
     )
 
 @app.get("/health")
@@ -67,11 +68,13 @@ def chat(request: ChatRequest, authorization: str | None = Header(default=None))
     messages = [{"role": item.role, "content": item.content} for item in request.messages]
     tokenizer = model.tokenizer
     if getattr(tokenizer, "chat_template", None):
+        template_options = {"thinking": True, "thinking_effort": os.getenv("KIMI_REASONING_EFFORT", "low")} if "Kimi-K3" in MODEL_ID else {}
         encoded = tokenizer.apply_chat_template(
             messages,
             add_generation_prompt=True,
             return_tensors="pt",
             return_dict=True,
+            **template_options,
         )
         input_ids = encoded["input_ids"]
         if input_ids.shape[-1] > MAX_INPUT_TOKENS:
