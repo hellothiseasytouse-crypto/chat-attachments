@@ -348,7 +348,7 @@ export default function WorkbenchConsole({
             payload.cudaAvailable === undefined ? "" : "CUDA: " + (payload.cudaAvailable ? "AVAILABLE" : "NOT DETECTED"),
             payload.cudaDevice ? "GPU: " + payload.cudaDevice : "",
             payload.message || "No additional status details."
-          ].filter(Boolean).join("\\n"));
+          ].filter(Boolean).join("\n"));
         } catch (error) {
           appendEvent("warning", service.toUpperCase() + " status check failed: " + (error instanceof Error ? error.message : "Unknown error"));
         }
