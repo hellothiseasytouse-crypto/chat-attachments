@@ -19,9 +19,14 @@ A terminal-first workspace for exercising the real NOXEN services through the of
 | Attach button or `/attach` | Up to 3 compressed images and text/code files for analysis |
 | `/ping`, `/status`, `/help`, `/export`, `/clear`, `/stop` | Diagnostics and session controls |
 
-## Model access
+## Studio Plus Arena
 
-Core, Nova, Swift, and Studio use the existing production chat endpoint. Studio Plus remains locked because its endpoint requires a verified owner session. The standalone playground does not bypass that rule.
+1. Sign in through the owner-access panel with the verified NOXEN owner account.
+2. The original Studio Plus call uses the existing production `/api/chat` route and passes the Supabase bearer session. The production API verifies owner access itself; its model/provider routing is not changed.
+3. Studio Plus V2 uses Kimi K3.1 Pro (`moonshotai/kimi-k3.1-pro`) through a separate server-side Vercel function. That function asks the production NOXEN API to confirm owner access before calling Kimi.
+4. Enter one prompt in Studio Plus Arena. Both requests start in parallel and their answers or errors are shown independently.
+
+Kimi V2 calls require `OPENROUTER_API_KEY` in the Console project's Preview environment and may consume provider credits. The server-side function caps output at 1,800 tokens. The key is never included in the browser bundle.
 
 ## Isolation and security
 
