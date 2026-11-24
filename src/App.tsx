@@ -556,34 +556,6 @@ export default function App() {
         </div>
       </section>
 
-      <section className="owner-access" aria-label="Studio Plus owner access">
-        <div className="owner-access-copy">
-          <span className="owner-access-kicker">STUDIO PLUS ACCESS</span>
-          <strong className={ownerVerified ? "owner-access-status verified" : "owner-access-status"}>
-            {ownerChecking ? "VERIFYING OWNER SESSION" : ownerVerified ? "OWNER VERIFIED" : authSession ? "ACCOUNT NOT AUTHORIZED" : authReady ? "SIGN IN REQUIRED" : "CHECKING SESSION"}
-          </strong>
-          <p>{ownerVerified
-            ? "The NOXEN server verified this account. Studio Plus and the Arena are unlocked for this session."
-            : "Sign in with the verified NOXEN owner account to test the original Studio Plus route and Studio Plus V2."}</p>
-        </div>
-        {authSession ? (
-          <div className="owner-access-session">
-            <span>{String(authSession.user?.email || "Signed-in account")}</span>
-            <button type="button" onClick={() => void signOutFromConsole()}>Sign out</button>
-          </div>
-        ) : (
-          <form className="owner-access-form" onSubmit={signInToConsole}>
-            <input type="email" value={authEmail} onChange={event => setAuthEmail(event.target.value)}
-              placeholder="NOXEN account email" autoComplete="username" required disabled={!authReady || authBusy} />
-            <input type="password" value={authPassword} onChange={event => setAuthPassword(event.target.value)}
-              placeholder="Password" autoComplete="current-password" required disabled={!authReady || authBusy} />
-            <button type="submit" disabled={!authReady || authBusy || !supabase}>{authBusy ? "Signing in…" : "Sign in"}</button>
-          </form>
-        )}
-        {authError && <p className="owner-access-error" role="alert">{authError}</p>}
-        <p className="owner-access-footnote">Sign-in is handled by NOXEN Supabase Auth. Kimi V2 tests may consume OpenRouter credits; each response is capped at 1,800 tokens.</p>
-      </section>
-
       <div className="backend-meta">
         <span><Cpu size={13} /> CORE · NOVA · SWIFT · STUDIO{ownerVerified ? " · STUDIO PLUS" : ""}</span>
         <span><AlertTriangle size={13} /> APP COMMANDS ONLY · NO OS SHELL</span>
